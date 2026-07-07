@@ -121,9 +121,9 @@ CREATE OR REPLACE GIT REPOSITORY BNK.PUBLIC.BNK_AI_DEMOS
   ORIGIN = 'https://github.com/sfc-gh-jheisler/BNK_AI_DEMOS.git';
 ```
 
-#### 5. Open in Workspaces
+#### 5. Run the SQL
 
-Navigate to **Snowsight > Projects > Workspaces**, select the repository, and execute the SQL files in numbered order for each use case.
+Navigate to **Snowsight > Projects > Workspaces**, select the repository, and execute the SQL files in numbered order for each use case (e.g. `kyc_aml/00_setup.sql` through `05_agent.sql`). Each file runs independently — just open and execute.
 
 ### Option C: Manual Deployment (without Cortex Code)
 
