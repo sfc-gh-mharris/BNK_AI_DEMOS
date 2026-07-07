@@ -7,7 +7,7 @@ End-to-end banking AI demonstrations built on Snowflake Cortex. Each use case sh
 | Use Case | Schema | Capabilities | Description |
 |----------|--------|--------------|-------------|
 | **Customer 360** | `BNK.CUSTOMER_360` | Cortex Analyst + Search | Unified customer view with transaction analytics and note search |
-| **KYC/AML** | `BNK.KYC_AML` | Document Pipeline + Search | Identity document processing with policy compliance search |
+| **KYC/AML** | `BNK.KYC_AML` | Document Pipeline + Search | Identity document processing with policy compliance search. Includes sample PDFs and generator. |
 | **Lending Analytics** | `BNK.LENDING` | Cortex Analyst + Search | Mortgage portfolio analytics with policy and interaction search |
 | **Wealth Management** | `BNK.WEALTH_MGMT` | Cortex Analyst + Search + Documents | Portfolio analytics, research search, compliance, and onboarding doc processing |
 
@@ -47,6 +47,8 @@ Type `/` in the Cortex Code chat to see available skills. Select the use case yo
 | `/deploy-wealth-mgmt` | Wealth Management — Cortex Analyst + 3 Search Services + Document Pipeline + Agent |
 
 Each skill reads the SQL scripts from the corresponding subfolder and executes them in order. The deployment is fully idempotent — you can re-run safely.
+
+After deployment, each skill offers an interactive demo walkthrough that showcases the key AI capabilities of that use case (multi-tool agent orchestration, document parsing, natural language analytics, etc.).
 
 ### Step 5: Use the agents
 
@@ -118,6 +120,8 @@ Each use case includes a `99_teardown.sql` script to remove all objects:
 │   ├── 99_teardown.sql      # Cleanup
 │   └── build_only/          # Internal tooling (not for customer deployment)
 ├── kyc_aml/                 # KYC/AML use case (same structure + document pipeline)
+│   ├── INSTRUCTIONS.md      # Full usage guide
+│   └── sample_documents/    # Pre-generated PDFs + generator script for pipeline demo
 ├── lending/                 # Lending Analytics use case
 ├── wealth_mgmt/             # Wealth Management use case (most comprehensive)
 └── data_refresh/            # Streamlit app for refreshing demo dates
@@ -127,5 +131,6 @@ Each use case includes a `99_teardown.sql` script to remove all objects:
 
 - All scripts use `CREATE IF NOT EXISTS` or `CREATE OR ALTER` — safe to re-run
 - The `build_only/` folders contain Python scripts used to generate the synthetic data; they are not needed for deployment
+- The KYC/AML use case includes `sample_documents/` with pre-generated PDFs ready to upload to the stage — see `kyc_aml/INSTRUCTIONS.md` for the full pipeline walkthrough
 - Agents use `orchestration: auto` for model selection
 - Search Services require a few minutes after creation to index data before they return results
