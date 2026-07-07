@@ -437,13 +437,13 @@ def main(output_dir: str, count: int):
     """
     Generate synthetic KYC documents.
     
-    Output structure mirrors the Snowflake stage layout:
-        output_dir/clients/<client_id>/Passport_<doc_id>.pdf
-        output_dir/clients/<client_id>/DriversLicense_<doc_id>.pdf
-        output_dir/clients/<client_id>/FinancialStatement_<doc_id>.pdf
+    Output structure:
+        output_dir/clients/Passport_<doc_id>.pdf
+        output_dir/clients/DriversLicense_<doc_id>.pdf
+        output_dir/clients/FinancialStatement_<doc_id>.pdf
     """
-    output_path = Path(output_dir)
-    output_path.mkdir(parents=True, exist_ok=True)
+    clients_dir = Path(output_dir) / "clients"
+    clients_dir.mkdir(parents=True, exist_ok=True)
 
     passport_gen = PassportGenerator()
     license_gen = DriversLicenseGenerator()
@@ -461,7 +461,6 @@ def main(output_dir: str, count: int):
 
         if doc_type in ("Passport", "DriversLicense"):
             person = generate_person_data()
-            client_id = person["client_id"]
 
             if doc_type == "Passport":
                 person["document_number"] = f"P{''.join(random.choices(string.digits, k=7))}"
@@ -469,15 +468,10 @@ def main(output_dir: str, count: int):
                 person["document_number"] = f"DL-{''.join(random.choices(string.digits, k=6))}"
         else:
             company = generate_company_data()
-            client_id = company["client_id"]
-
-        # Create client directory
-        client_dir = output_path / "clients" / client_id
-        client_dir.mkdir(parents=True, exist_ok=True)
 
         # Generate document
         file_name = f"{doc_type}_{doc_id}.pdf"
-        file_path = str(client_dir / file_name)
+        file_path = str(clients_dir / file_name)
 
         if doc_type == "Passport":
             passport_gen.generate(file_path, person)
@@ -495,9 +489,9 @@ def main(output_dir: str, count: int):
     print(f"  Passports: {generated['Passport']}")
     print(f"  Driver's Licenses: {generated['DriversLicense']}")
     print(f"  Financial Statements: {generated['FinancialStatement']}")
-    print(f"\nOutput directory: {output_path}")
+    print(f"\nOutput directory: {clients_dir}")
     print(f"\nTo upload to Snowflake stage:")
-    print(f"  PUT file://{output_path}/clients/*/*.pdf @BNK.KYC_AML.KYC_DOCUMENTS/clients/ AUTO_COMPRESS=FALSE;")
+    print(f"  PUT file://{clients_dir}/*.pdf @BNK.KYC_AML.KYC_DOCUMENTS/clients/ AUTO_COMPRESS=FALSE;")
 
 
 if __name__ == "__main__":

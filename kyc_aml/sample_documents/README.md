@@ -8,7 +8,7 @@ Upload the included PDFs directly to your Snowflake stage:
 
 ```sql
 -- From SnowSQL or Snowsight (adjust the local path to where you cloned this repo)
-PUT file:///path/to/kyc_aml/sample_documents/pdfs/clients/*/*.pdf
+PUT file:///path/to/kyc_aml/sample_documents/pdfs/clients/*.pdf
     @BNK.KYC_AML.KYC_DOCUMENTS/clients/
     AUTO_COMPRESS=FALSE;
 ```

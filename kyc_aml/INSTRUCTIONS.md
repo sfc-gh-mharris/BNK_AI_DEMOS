@@ -30,7 +30,7 @@ Pre-generated PDFs are in `sample_documents/pdfs/`. Upload them:
 
 ```sql
 -- Adjust the file path to your local clone location
-PUT file:///path/to/kyc_aml/sample_documents/pdfs/clients/*/*.pdf
+PUT file:///path/to/kyc_aml/sample_documents/pdfs/clients/*.pdf
     @BNK.KYC_AML.KYC_DOCUMENTS/clients/
     AUTO_COMPRESS=FALSE;
 ```
