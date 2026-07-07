@@ -60,10 +60,12 @@ After deployment, access your agents in:
 - **Direct SQL** — Query agents programmatically:
 
 ```sql
-SELECT SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
-  'BNK.CUSTOMER_360.CUSTOMER_360_AGENT',
-  [{'role': 'user', 'content': 'How many customers do we have?'}]
-);
+SELECT TRY_PARSE_JSON(
+  SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
+    'BNK.CUSTOMER_360.CUSTOMER_360_AGENT',
+    $${"messages": [{"role": "user", "content": [{"type": "text", "text": "How many customers do we have?"}]}]}$$
+  )
+) AS resp;
 ```
 
 ## What Gets Deployed

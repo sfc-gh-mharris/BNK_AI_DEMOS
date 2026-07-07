@@ -87,10 +87,12 @@ After all scripts complete, use the **user's configured database and schema** in
 
 2. Quick agent test:
    ```sql
-   SELECT SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
-     '{user_db}.{user_schema}.LENDING_AGENT',
-     [{'role': 'user', 'content': 'What is the total value of our mortgage portfolio?'}]
-   );
+   SELECT TRY_PARSE_JSON(
+     SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
+       '{user_db}.{user_schema}.LENDING_AGENT',
+       $${"messages": [{"role": "user", "content": [{"type": "text", "text": "What is the total value of our mortgage portfolio?"}]}]}$$
+     )
+   ) AS resp;
    ```
 
 Present results to user.
@@ -110,10 +112,12 @@ Options:
 
 1. **Complex analytics question (Cortex Analyst).** Run a question that exercises the Semantic View with joins, filters, and aggregation:
    ```sql
-   SELECT SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
-     '{user_db}.{user_schema}.LENDING_AGENT',
-     [{'role': 'user', 'content': 'What are the top 5 mortgage products by delinquency rate, and what is the average loan-to-value ratio for each?'}]
-   );
+   SELECT TRY_PARSE_JSON(
+     SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
+       '{user_db}.{user_schema}.LENDING_AGENT',
+       $${"messages": [{"role": "user", "content": [{"type": "text", "text": "What are the top 5 mortgage products by delinquency rate, and what is the average loan-to-value ratio for each?"}]}]}$$
+     )
+   ) AS resp;
    ```
 
 2. **Show the user what to look for:**
@@ -123,10 +127,12 @@ Options:
 
 3. **Policy + interaction search.** Run a question that triggers both Search tools:
    ```sql
-   SELECT SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
-     '{user_db}.{user_schema}.LENDING_AGENT',
-     [{'role': 'user', 'content': 'What is our policy on loan modifications for borrowers in hardship, and have any recent customer interactions mentioned forbearance requests?'}]
-   );
+   SELECT TRY_PARSE_JSON(
+     SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
+       '{user_db}.{user_schema}.LENDING_AGENT',
+       $${"messages": [{"role": "user", "content": [{"type": "text", "text": "What is our policy on loan modifications for borrowers in hardship, and have any recent customer interactions mentioned forbearance requests?"}]}]}$$
+     )
+   ) AS resp;
    ```
    Point out how the agent searches two separate corpora (lending policies and customer interactions) and synthesizes them into a coherent answer with citations.
 

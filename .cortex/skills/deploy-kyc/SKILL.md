@@ -90,10 +90,12 @@ After all scripts complete, use the **user's configured database and schema** in
 
 2. Quick agent test:
    ```sql
-   SELECT SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
-     '{user_db}.{user_schema}.KYC_AGENT',
-     [{'role': 'user', 'content': 'What are our current high-risk KYC cases?'}]
-   );
+   SELECT TRY_PARSE_JSON(
+     SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
+       '{user_db}.{user_schema}.KYC_AGENT',
+       $${"messages": [{"role": "user", "content": [{"type": "text", "text": "What are our current high-risk KYC cases?"}]}]}$$
+     )
+   ) AS resp;
    ```
 
 Present results to user.

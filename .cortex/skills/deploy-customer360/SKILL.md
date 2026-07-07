@@ -87,10 +87,12 @@ After all scripts complete, use the **user's configured database and schema** in
 
 2. Quick agent test:
    ```sql
-   SELECT SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
-     '{user_db}.{user_schema}.CUSTOMER_360_AGENT',
-     [{'role': 'user', 'content': 'How many customers do we have?'}]
-   );
+   SELECT TRY_PARSE_JSON(
+     SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
+       '{user_db}.{user_schema}.CUSTOMER_360_AGENT',
+       $${"messages": [{"role": "user", "content": [{"type": "text", "text": "How many customers do we have?"}]}]}$$
+     )
+   ) AS resp;
    ```
 
 Present results to user.
@@ -110,10 +112,12 @@ Options:
 
 1. **Multi-tool question (Analyst + Search combined).** Run a question that forces the agent to use both its Semantic View (Cortex Analyst) and Search tools:
    ```sql
-   SELECT SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
-     '{user_db}.{user_schema}.CUSTOMER_360_AGENT',
-     [{'role': 'user', 'content': 'Who are our top 5 customers by total account balance, and are there any recent notes or concerns flagged for them?'}]
-   );
+   SELECT TRY_PARSE_JSON(
+     SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
+       '{user_db}.{user_schema}.CUSTOMER_360_AGENT',
+       $${"messages": [{"role": "user", "content": [{"type": "text", "text": "Who are our top 5 customers by total account balance, and are there any recent notes or concerns flagged for them?"}]}]}$$
+     )
+   ) AS resp;
    ```
 
 2. **Show the user what to look for in the output:**
@@ -123,10 +127,12 @@ Options:
 
 3. **Policy search demo.** Run a pure search question to show RAG quality:
    ```sql
-   SELECT SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
-     '{user_db}.{user_schema}.CUSTOMER_360_AGENT',
-     [{'role': 'user', 'content': 'What is our policy on fee waivers for high-value clients?'}]
-   );
+   SELECT TRY_PARSE_JSON(
+     SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
+       '{user_db}.{user_schema}.CUSTOMER_360_AGENT',
+       $${"messages": [{"role": "user", "content": [{"type": "text", "text": "What is our policy on fee waivers for high-value clients?"}]}]}$$
+     )
+   ) AS resp;
    ```
    Point out that the response cites specific policies and provides actionable guidance grounded in institutional rules.
 

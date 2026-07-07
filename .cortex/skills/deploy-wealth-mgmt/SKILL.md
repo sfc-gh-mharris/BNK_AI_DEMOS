@@ -94,10 +94,12 @@ After all scripts complete, use the **user's configured database and schema** in
 
 2. Quick agent test:
    ```sql
-   SELECT SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
-     '{user_db}.{user_schema}.WEALTH_MGMT_AGENT',
-     [{'role': 'user', 'content': 'What is the total AUM across all client portfolios?'}]
-   );
+   SELECT TRY_PARSE_JSON(
+     SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
+       '{user_db}.{user_schema}.WEALTH_MGMT_AGENT',
+       $${"messages": [{"role": "user", "content": [{"type": "text", "text": "What is the total AUM across all client portfolios?"}]}]}$$
+     )
+   ) AS resp;
    ```
 
 Present results to user.
@@ -117,10 +119,12 @@ Options:
 
 1. **Portfolio analytics (Cortex Analyst).** Run a question that demonstrates the Semantic View over portfolio/holdings data:
    ```sql
-   SELECT SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
-     '{user_db}.{user_schema}.WEALTH_MGMT_AGENT',
-     [{'role': 'user', 'content': 'What are our largest equity exposures by sector, and which client portfolios have the highest concentration risk?'}]
-   );
+   SELECT TRY_PARSE_JSON(
+     SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
+       '{user_db}.{user_schema}.WEALTH_MGMT_AGENT',
+       $${"messages": [{"role": "user", "content": [{"type": "text", "text": "What are our largest equity exposures by sector, and which client portfolios have the highest concentration risk?"}]}]}$$
+     )
+   ) AS resp;
    ```
 
 2. **Show the user what to look for:**
@@ -130,10 +134,12 @@ Options:
 
 3. **Multi-tool orchestration (Analyst + Research + Compliance).** Run a question that requires multiple tools:
    ```sql
-   SELECT SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
-     '{user_db}.{user_schema}.WEALTH_MGMT_AGENT',
-     [{'role': 'user', 'content': 'Are any of our client portfolios overweight in technology stocks, and what does our latest research say about the tech sector outlook? Also check if there are any compliance guidelines on sector concentration limits.'}]
-   );
+   SELECT TRY_PARSE_JSON(
+     SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
+       '{user_db}.{user_schema}.WEALTH_MGMT_AGENT',
+       $${"messages": [{"role": "user", "content": [{"type": "text", "text": "Are any of our client portfolios overweight in technology stocks, and what does our latest research say about the tech sector outlook? Also check if there are any compliance guidelines on sector concentration limits."}]}]}$$
+     )
+   ) AS resp;
    ```
    Point out:
    - The agent calls **three different tools** to answer one question (Analyst for portfolio data, Research Search for sector outlook, Compliance Search for concentration rules)
@@ -142,10 +148,12 @@ Options:
 
 4. **Client notes search.** Show the relationship-management angle:
    ```sql
-   SELECT SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
-     '{user_db}.{user_schema}.WEALTH_MGMT_AGENT',
-     [{'role': 'user', 'content': 'What have advisors noted about clients who expressed interest in ESG investing?'}]
-   );
+   SELECT TRY_PARSE_JSON(
+     SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
+       '{user_db}.{user_schema}.WEALTH_MGMT_AGENT',
+       $${"messages": [{"role": "user", "content": [{"type": "text", "text": "What have advisors noted about clients who expressed interest in ESG investing?"}]}]}$$
+     )
+   ) AS resp;
    ```
    Highlight that this surfaces advisor meeting notes, preferences, and action items that would otherwise require reading through hundreds of records.
 
