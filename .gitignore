@@ -1,2 +1,16 @@
 .snowflake/
 .DS_Store
+
+# Secrets and credentials
+.env
+.env.*
+*.pem
+*.key
+*.p8
+credentials.json
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
