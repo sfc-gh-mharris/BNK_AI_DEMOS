@@ -17,7 +17,9 @@ End-to-end banking AI demonstrations built on Snowflake Cortex. Each use case sh
 - **ACCOUNTADMIN** role (or equivalent: CREATE DATABASE, CREATE WAREHOUSE, CREATE STAGE)
 - **[Cortex Code Desktop](https://docs.snowflake.com/en/user-guide/cortex-code/cortex-code)** installed
 
-## Deployment with Cortex Code
+## Deployment Options
+
+### Option A: Cortex Code Desktop (recommended)
 
 This repo includes built-in Cortex Code skills that automate the entire deployment. No manual SQL execution required.
 
@@ -77,7 +79,53 @@ All use cases deploy into the **BNK** database with a shared **BNK_WH** warehous
 | LENDING | LENDING_AGENT | SV_LENDING_ANALYTICS | LENDING_POLICY_SEARCH, INTERACTION_SEARCH | — |
 | WEALTH_MGMT | WEALTH_MGMT_AGENT | SV_WEALTH_PORTFOLIO | RESEARCH_SEARCH, COMPLIANCE_SEARCH, CLIENT_NOTES_SEARCH | AI_PARSE_DOCUMENT procedures |
 
-## Manual Deployment (without Cortex Code)
+### Option B: Snowflake Workspaces (via Git integration)
+
+If you prefer to work directly in Snowsight without installing Cortex Code Desktop, you can connect this repository to Snowflake Workspaces.
+
+#### 1. Create a GitHub Personal Access Token
+
+1. Go to **github.com > Settings > Developer settings > Personal access tokens > Tokens (classic)**
+2. Click **"Generate new token (classic)"**
+3. Name it (e.g. `snowflake-workspace`), set expiration (90 days or no expiration for demos)
+4. Select scope: **`repo`** (full control of private repositories)
+5. Click **"Generate token"** and copy the token immediately
+
+#### 2. Create a Snowflake SECRET
+
+```sql
+USE ROLE ACCOUNTADMIN;
+
+CREATE OR REPLACE SECRET BNK.PUBLIC.GIT_PAT_SECRET
+  TYPE = password
+  USERNAME = '<YOUR_GITHUB_USERNAME>'
+  PASSWORD = '<YOUR_GITHUB_PAT>';
+```
+
+#### 3. Create an API Integration
+
+```sql
+CREATE OR REPLACE API INTEGRATION GIT_API_INTEGRATION
+  API_PROVIDER = git_https_api
+  API_ALLOWED_PREFIXES = ('https://github.com/sfc-gh-jheisler')
+  ALLOWED_AUTHENTICATION_SECRETS = (BNK.PUBLIC.GIT_PAT_SECRET)
+  ENABLED = TRUE;
+```
+
+#### 4. Create a Git Repository object
+
+```sql
+CREATE OR REPLACE GIT REPOSITORY BNK.PUBLIC.BNK_AI_DEMOS
+  API_INTEGRATION = GIT_API_INTEGRATION
+  GIT_CREDENTIALS = BNK.PUBLIC.GIT_PAT_SECRET
+  ORIGIN = 'https://github.com/sfc-gh-jheisler/BNK_AI_DEMOS.git';
+```
+
+#### 5. Open in Workspaces
+
+Navigate to **Snowsight > Projects > Workspaces**, select the repository, and execute the SQL files in numbered order for each use case.
+
+### Option C: Manual Deployment (without Cortex Code)
 
 If you prefer to deploy manually, execute the SQL files in each subfolder in numbered order:
 
