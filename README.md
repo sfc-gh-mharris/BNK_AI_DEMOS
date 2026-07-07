@@ -15,7 +15,6 @@ End-to-end banking AI demonstrations built on Snowflake Cortex. Each use case sh
 
 - **Snowflake account** with Cortex AI features enabled
 - **ACCOUNTADMIN** role (or equivalent: CREATE DATABASE, CREATE WAREHOUSE, CREATE STAGE)
-- **[Cortex Code Desktop](https://docs.snowflake.com/en/user-guide/cortex-code/cortex-code)** installed
 
 ## Deployment Options
 
