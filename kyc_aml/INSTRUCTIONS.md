@@ -7,6 +7,61 @@ AI-powered Know Your Customer and Anti-Money Laundering compliance platform on S
 - Snowflake account with `ACCOUNTADMIN` or role with `CREATE DATABASE`, `CREATE WAREHOUSE` privileges
 - Warehouse size MEDIUM or larger (for AI functions)
 
+## Opening in Snowflake Workspaces
+
+To run these scripts directly in Snowsight without cloning locally:
+
+```sql
+USE ROLE ACCOUNTADMIN;
+
+-- 1. Store your GitHub credentials
+CREATE OR REPLACE SECRET BNK.PUBLIC.GIT_PAT_SECRET
+  TYPE = password
+  USERNAME = '<YOUR_GITHUB_USERNAME>'
+  PASSWORD = '<YOUR_GITHUB_PAT>';
+
+-- 2. Create API integration for GitHub access
+CREATE OR REPLACE API INTEGRATION GIT_API_INTEGRATION
+  API_PROVIDER = git_https_api
+  API_ALLOWED_PREFIXES = ('https://github.com/sfc-gh-jheisler')
+  ALLOWED_AUTHENTICATION_SECRETS = (BNK.PUBLIC.GIT_PAT_SECRET)
+  ENABLED = TRUE;
+
+-- 3. Create the Git Repository object
+CREATE OR REPLACE GIT REPOSITORY BNK.PUBLIC.BNK_AI_DEMOS
+  API_INTEGRATION = GIT_API_INTEGRATION
+  GIT_CREDENTIALS = BNK.PUBLIC.GIT_PAT_SECRET
+  ORIGIN = 'https://github.com/sfc-gh-jheisler/BNK_AI_DEMOS.git';
+```
+
+Then navigate to **Snowsight > Projects > Workspaces**, select `BNK_AI_DEMOS`, and open the `kyc_aml/` folder. Execute each SQL file in numbered order.
+
+> **GitHub PAT**: Go to github.com > Settings > Developer settings > Personal access tokens > Tokens (classic). Generate a token with `repo` scope.
+
+### Opening the Repository as a Workspace
+
+1. In Snowsight, click **Projects** in the left navigation bar
+2. Click **Workspaces**
+3. Click the **+ Workspace** button (top right)
+4. Select **"From Git repository"**
+5. Fill in the form:
+   - **Repository URL:** `https://github.com/sfc-gh-jheisler/BNK_AI_DEMOS.git`
+   - **API Integration:** Select `GIT_API_INTEGRATION` from the dropdown
+   - **Authentication method:** Select **"Personal access token"**
+   - **Secret:** Browse to `BNK.PUBLIC` and select `GIT_PAT_SECRET`
+6. Click **"Create"**
+
+Snowflake will clone the repo and open it as a workspace. All files from the repository will appear in the file explorer on the left.
+
+### Working with Your Workspace
+
+Once open, you can:
+
+- **Switch branches** — Use the branch selector at the top of the file explorer
+- **Pull changes** — Click the pull icon to sync latest changes from GitHub
+- **Run files** — Open any `.sql` file and execute it directly
+- **Navigate** — Open the `kyc_aml/` folder and run scripts `00_setup.sql` through `05_agent.sql` in order
+
 ## Deployment
 
 Run the SQL scripts in order. Each is idempotent (safe to re-run).
