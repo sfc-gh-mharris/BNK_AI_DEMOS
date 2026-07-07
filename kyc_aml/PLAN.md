@@ -39,6 +39,8 @@ Documents (passports, driver's licenses, financial statements, utility bills, co
     UtilityBill_<doc_id>.pdf
 ```
 
+**Sample documents** are included in `sample_documents/pdfs/` — upload them to the stage to exercise the pipeline immediately. See `sample_documents/README.md` for instructions. To generate additional documents, run `sample_documents/generate_pdfs.py`.
+
 ### Stage 2: AI_PARSE_DOCUMENT (OCR + Layout Extraction)
 
 The `PROCESS_KYC_DOCUMENT` stored procedure calls `AI_PARSE_DOCUMENT` with `LAYOUT` mode to extract structured text while preserving document layout. This handles:

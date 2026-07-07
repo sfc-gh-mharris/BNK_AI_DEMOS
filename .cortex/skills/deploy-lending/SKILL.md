@@ -95,9 +95,51 @@ After all scripts complete, use the **user's configured database and schema** in
 
 Present results to user.
 
+### Step 4: Demo the Agent (Interactive)
+
+After validation succeeds, ask the user if they'd like to see the lending agent demonstrate natural language portfolio analytics and policy search. Use `ask_user_question`:
+
+```
+"Your Lending Analytics agent is deployed. Would you like to see it answer complex portfolio questions in natural language?"
+Options:
+- "Yes, show me the demo" — proceed with the steps below
+- "No, I'm done for now" — skip to Output
+```
+
+**If the user opts in:**
+
+1. **Complex analytics question (Cortex Analyst).** Run a question that exercises the Semantic View with joins, filters, and aggregation:
+   ```sql
+   SELECT SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
+     '{user_db}.{user_schema}.LENDING_AGENT',
+     [{'role': 'user', 'content': 'What are the top 5 mortgage products by delinquency rate, and what is the average loan-to-value ratio for each?'}]
+   );
+   ```
+
+2. **Show the user what to look for:**
+   - **Generated SQL** → The agent produced a correct query with GROUP BY, ratio calculations, and proper joins across the lending tables — all from a plain English question. Point out the SQL it generated.
+   - **Semantic model grounding** → The agent knows which columns mean "delinquent" vs "current" because the semantic view defines business meaning. Highlight that no one had to explain the schema.
+   - **Numeric precision** → The aggregation results should be accurate. Compare against a manual spot-check if desired.
+
+3. **Policy + interaction search.** Run a question that triggers both Search tools:
+   ```sql
+   SELECT SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
+     '{user_db}.{user_schema}.LENDING_AGENT',
+     [{'role': 'user', 'content': 'What is our policy on loan modifications for borrowers in hardship, and have any recent customer interactions mentioned forbearance requests?'}]
+   );
+   ```
+   Point out how the agent searches two separate corpora (lending policies and customer interactions) and synthesizes them into a coherent answer with citations.
+
+4. **Call out key observations:**
+   - The Semantic View translates business questions into SQL without exposing table complexity to the user
+   - The agent combines quantitative answers (Analyst) with qualitative context (Search) in one response
+   - Policy search returns specific regulation/guideline citations, not generic summaries
+   - Interaction search surfaces relevant customer conversations that would take hours to find manually
+   - Typical response time: 5-15 seconds for analytics, 3-8 seconds for pure search
+
 ## Stopping Points
 
-- None — fully automated deployment. Report results at the end.
+- Step 4 is interactive. If the user declines, stop after Step 3 results.
 
 ## Output
 

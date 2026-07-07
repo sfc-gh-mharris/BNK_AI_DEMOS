@@ -95,9 +95,51 @@ After all scripts complete, use the **user's configured database and schema** in
 
 Present results to user.
 
+### Step 4: Demo the Agent (Interactive)
+
+After validation succeeds, ask the user if they'd like to see the agent's multi-tool capabilities in action. Use `ask_user_question`:
+
+```
+"Your Customer 360 agent is deployed. Would you like to see it combine structured analytics with unstructured search in a single question?"
+Options:
+- "Yes, show me the demo" — proceed with the steps below
+- "No, I'm done for now" — skip to Output
+```
+
+**If the user opts in:**
+
+1. **Multi-tool question (Analyst + Search combined).** Run a question that forces the agent to use both its Semantic View (Cortex Analyst) and Search tools:
+   ```sql
+   SELECT SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
+     '{user_db}.{user_schema}.CUSTOMER_360_AGENT',
+     [{'role': 'user', 'content': 'Who are our top 5 customers by total account balance, and are there any recent notes or concerns flagged for them?'}]
+   );
+   ```
+
+2. **Show the user what to look for in the output:**
+   - **Tool orchestration** → The agent should call Cortex Analyst first (to get top customers by balance from structured data), then Cortex Search on customer notes for those specific clients. Point out the multi-step reasoning.
+   - **SQL generation** → Expand the analyst tool call to show the generated SQL. Highlight that it correctly joined the right tables and applied the right aggregation without any SQL being written by the user.
+   - **Search grounding** → The notes search results should include citations. Point out how the agent synthesizes structured numbers with unstructured context.
+
+3. **Policy search demo.** Run a pure search question to show RAG quality:
+   ```sql
+   SELECT SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
+     '{user_db}.{user_schema}.CUSTOMER_360_AGENT',
+     [{'role': 'user', 'content': 'What is our policy on fee waivers for high-value clients?'}]
+   );
+   ```
+   Point out that the response cites specific policies and provides actionable guidance grounded in institutional rules.
+
+4. **Call out key observations:**
+   - The agent decides which tools to call based on the question — no routing logic needed
+   - Analyst generates correct SQL over the semantic model without the user knowing table/column names
+   - Search results are filtered by relevant attributes (customer segment, topic) automatically
+   - Multi-turn conversations maintain context (the user can follow up without restating context)
+   - Response time is typically 5-15 seconds depending on query complexity
+
 ## Stopping Points
 
-- None — this is a fully automated deployment. Report results at the end.
+- Step 4 is interactive. If the user declines, stop after Step 3 results.
 
 ## Output
 

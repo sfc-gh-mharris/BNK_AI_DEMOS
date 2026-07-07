@@ -98,9 +98,60 @@ After all scripts complete, use the **user's configured database and schema** in
 
 Present results to user.
 
+### Step 4: Try the Document Pipeline (Interactive)
+
+After validation succeeds, ask the user if they'd like to upload sample documents and run one through the pipeline. Use `ask_user_question`:
+
+```
+"Your KYC/AML pipeline is deployed. Would you like to upload a sample document and run it through the AI processing pipeline?"
+Options:
+- "Yes, upload samples and run one" — proceed with the steps below
+- "No, I'm done for now" — skip to Output
+```
+
+**If the user opts in:**
+
+1. **Generate or locate sample PDFs.** The repo includes pre-generated samples at `kyc_aml/sample_documents/pdfs/`. If they don't exist, run the generator:
+   ```bash
+   pip install fpdf2
+   python kyc_aml/sample_documents/generate_pdfs.py --output kyc_aml/sample_documents/pdfs --count 10
+   ```
+
+2. **Upload to stage.** Execute a PUT command for one client folder (pick the first one available):
+   ```sql
+   PUT file://<absolute_path_to_one_client_folder>/*.pdf
+       @{user_db}.{user_schema}.KYC_DOCUMENTS/clients/<client_id>/
+       AUTO_COMPRESS=FALSE;
+   ```
+
+3. **Run the pipeline on one document.** Pick one uploaded file and call:
+   ```sql
+   CALL {user_db}.{user_schema}.PROCESS_KYC_DOCUMENT(
+       'clients/<client_id>/<filename>.pdf'
+   );
+   ```
+
+4. **Show the user what to look for in the output.** After the procedure returns, explain:
+   - `classification` → The AI's prediction of document type (Passport / DriversLicense / FinancialStatement) plus confidence. Highlight whether it correctly identified the document.
+   - `extracted_fields` → Structured fields pulled from the document. For a passport: `full_name`, `date_of_birth`, `document_number`, `nationality`, `expiry_date`. Point out the accuracy of the extraction.
+   - `parsed_pages` → The raw OCR text. Useful for debugging if extraction looks wrong.
+
+5. **Optional: Run identity verification.** If the uploaded document was a passport or driver's license, offer to run verification:
+   ```sql
+   CALL {user_db}.{user_schema}.VERIFY_IDENTITY('<client_id>', '<doc_id>');
+   ```
+   Explain that this fuzzy-matches extracted name/DOB against the CLIENTS master table using Jaro-Winkler similarity. Since the sample docs are synthetic, the match will show "mismatch" (the generated names won't match the seed data) — but this demonstrates the verification flow. In a real deployment, documents uploaded for actual clients would produce match/partial-match results.
+
+6. **Call out key observations for the user:**
+   - AI_PARSE_DOCUMENT handles scanned PDFs, rotated text, and multi-column layouts
+   - AI_CLASSIFY catches mislabeled uploads (e.g., a financial statement uploaded as "passport")
+   - AI_EXTRACT field accuracy depends on document quality — clean text PDFs extract near-perfectly; scanned/low-res images may have partial extractions
+   - The full pipeline runs in ~3-5 seconds per document on a MEDIUM warehouse
+   - Batch mode (`BATCH_PROCESS_DOCUMENTS`) parallelizes across the warehouse for production scale
+
 ## Stopping Points
 
-- None — fully automated deployment. Report results at the end.
+- Step 4 is interactive. If the user declines, stop after Step 3 results.
 
 ## Output
 

@@ -102,9 +102,64 @@ After all scripts complete, use the **user's configured database and schema** in
 
 Present results to user.
 
+### Step 4: Demo the Agent (Interactive)
+
+After validation succeeds, ask the user if they'd like to see the wealth management agent's full capabilities — this is the most feature-rich of the four demos with 4 tools. Use `ask_user_question`:
+
+```
+"Your Wealth Management agent is deployed with portfolio analytics, research, compliance, and client notes. Would you like to see a multi-tool demo?"
+Options:
+- "Yes, show me the demo" — proceed with the steps below
+- "No, I'm done for now" — skip to Output
+```
+
+**If the user opts in:**
+
+1. **Portfolio analytics (Cortex Analyst).** Run a question that demonstrates the Semantic View over portfolio/holdings data:
+   ```sql
+   SELECT SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
+     '{user_db}.{user_schema}.WEALTH_MGMT_AGENT',
+     [{'role': 'user', 'content': 'What are our largest equity exposures by sector, and which client portfolios have the highest concentration risk?'}]
+   );
+   ```
+
+2. **Show the user what to look for:**
+   - **SQL generation** → The agent translated "concentration risk" into the right calculation (% of portfolio in a single sector/holding). Point out the generated SQL.
+   - **Multi-table joins** → The query should join portfolios, holdings, and securities tables correctly. Highlight the complexity being hidden from the user.
+   - **Business context** → The semantic model knows what "AUM", "exposure", and "concentration" mean in a wealth management context.
+
+3. **Multi-tool orchestration (Analyst + Research + Compliance).** Run a question that requires multiple tools:
+   ```sql
+   SELECT SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
+     '{user_db}.{user_schema}.WEALTH_MGMT_AGENT',
+     [{'role': 'user', 'content': 'Are any of our client portfolios overweight in technology stocks, and what does our latest research say about the tech sector outlook? Also check if there are any compliance guidelines on sector concentration limits.'}]
+   );
+   ```
+   Point out:
+   - The agent calls **three different tools** to answer one question (Analyst for portfolio data, Research Search for sector outlook, Compliance Search for concentration rules)
+   - Each source is cited separately — the user can distinguish data facts from research opinions from compliance requirements
+   - The synthesis connects all three: here's the exposure, here's the outlook, here's whether it violates policy
+
+4. **Client notes search.** Show the relationship-management angle:
+   ```sql
+   SELECT SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
+     '{user_db}.{user_schema}.WEALTH_MGMT_AGENT',
+     [{'role': 'user', 'content': 'What have advisors noted about clients who expressed interest in ESG investing?'}]
+   );
+   ```
+   Highlight that this surfaces advisor meeting notes, preferences, and action items that would otherwise require reading through hundreds of records.
+
+5. **Call out key observations:**
+   - This agent orchestrates 4 tools without explicit routing — the model decides what to call based on the question
+   - Research search returns timely market commentary grounded in the institution's own research library
+   - Compliance search provides specific rules with regulatory references, not generic advice
+   - The combination of quantitative (Analyst) + qualitative (3x Search) creates an assistant that understands both numbers and context
+   - This is the demo that best shows what a "wealth advisor co-pilot" looks like in production
+   - Typical response time: 10-20 seconds for multi-tool questions (each tool call adds latency)
+
 ## Stopping Points
 
-- None — fully automated deployment. Report results at the end.
+- Step 4 is interactive. If the user declines, stop after Step 3 results.
 
 ## Output
 
