@@ -127,6 +127,21 @@ CREATE OR REPLACE GIT REPOSITORY BNK.PUBLIC.BNK_AI_DEMOS
 
 Navigate to **Snowsight > Projects > Workspaces**, select the repository, and execute the SQL files in numbered order for each use case (e.g. `kyc_aml/00_setup.sql` through `05_agent.sql`). Each file runs independently — just open and execute.
 
+#### 6. (Optional) Add the deploy skills to Cortex Code in Snowsight
+
+The `.cortex/skills/` folder in this repo contains deployment skills that automate the full setup. To use them in the Snowsight Cortex Code UI:
+
+1. Open your Workspace in Snowsight
+2. Click the **Cortex Code icon** (bottom-right corner) to open the assistant panel
+3. In the Cortex Code panel, click the **`/`** menu and select **"+ Upload Skill Folder(s)"**
+4. Navigate to the `.cortex/skills/` directory in the workspace file explorer and upload the skill folder you want (e.g. `deploy-kyc`)
+5. The skill is now available — type `/` in the message box and select it (e.g. `/deploy-kyc`)
+
+Alternatively, you can upload individual skill files:
+- Click **"Upload Skill File(s)"** and select the `SKILL.md` file from any skill folder
+
+Once uploaded, the skills appear under the `/` menu and provide the same automated deployment + interactive demo walkthrough as in Cortex Code Desktop.
+
 ### Option C: Manual Deployment (without Cortex Code)
 
 If you prefer to deploy manually, execute the SQL files in each subfolder in numbered order:
