@@ -1,0 +1,33 @@
+-- =============================================================================
+-- LENDING ANALYTICS — TEARDOWN SCRIPT
+-- Schema: BNK.LENDING
+--
+-- Removes all AI services, data, and objects.
+-- PRESERVES: The BNK database and LENDING schema (empty shell remains).
+-- NEVER: Drops the database.
+-- =============================================================================
+
+USE DATABASE BNK;
+USE SCHEMA LENDING;
+USE WAREHOUSE BNK_WH;
+
+-- Step 1: Drop Agent
+DROP AGENT IF EXISTS BNK.LENDING.LENDING_AGENT;
+
+-- Step 2: Drop Cortex Search Services
+DROP CORTEX SEARCH SERVICE IF EXISTS BNK.LENDING.LENDING_POLICY_SEARCH;
+DROP CORTEX SEARCH SERVICE IF EXISTS BNK.LENDING.INTERACTION_SEARCH;
+
+-- Step 3: Drop Semantic View
+DROP SEMANTIC VIEW IF EXISTS BNK.LENDING.SV_LENDING_ANALYTICS;
+
+-- Step 4: Drop Tables (reverse dependency order)
+DROP TABLE IF EXISTS BNK.LENDING.REFINANCE_SIGNALS;
+DROP TABLE IF EXISTS BNK.LENDING.RISK_SCORES;
+DROP TABLE IF EXISTS BNK.LENDING.PAYMENTS;
+DROP TABLE IF EXISTS BNK.LENDING.MORTGAGES;
+DROP TABLE IF EXISTS BNK.LENDING.BORROWERS;
+DROP TABLE IF EXISTS BNK.LENDING.INTERACTION_HISTORY;
+DROP TABLE IF EXISTS BNK.LENDING.LENDING_POLICIES;
+
+-- Schema remains intact for re-deployment
