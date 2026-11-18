@@ -24,6 +24,8 @@ CREATE TABLE IF NOT EXISTS BNK.KYC_AML.CLIENTS (
         COMMENT 'Given name of an individual client. NULL for Corporate entities. Sourced from government-issued identity document at onboarding.',
     last_name       VARCHAR(100)
         COMMENT 'Family name / surname of an individual client. NULL for Corporate entities. Sourced from government-issued identity document at onboarding.',
+    date_of_birth   DATE
+        COMMENT 'Date of birth of an individual client. Format: YYYY-MM-DD. NULL for Corporate entities. Sourced from government-issued identity document at onboarding.',
     company_name    VARCHAR(255)
         COMMENT 'Registered legal name of a corporate client. NULL for Individual entities. Sourced from corporate registry filing.',
     nationality     VARCHAR(3)

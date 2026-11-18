@@ -23,7 +23,7 @@ CREATE OR REPLACE SECRET BNK.PUBLIC.GIT_PAT_SECRET
 -- 2. Create API integration for GitHub access
 CREATE OR REPLACE API INTEGRATION GIT_API_INTEGRATION
   API_PROVIDER = git_https_api
-  API_ALLOWED_PREFIXES = ('https://github.com/sfc-gh-jheisler')
+  API_ALLOWED_PREFIXES = ('https://github.com/sfc-gh-mharris')
   ALLOWED_AUTHENTICATION_SECRETS = (BNK.PUBLIC.GIT_PAT_SECRET)
   ENABLED = TRUE;
 
@@ -31,7 +31,7 @@ CREATE OR REPLACE API INTEGRATION GIT_API_INTEGRATION
 CREATE OR REPLACE GIT REPOSITORY BNK.PUBLIC.BNK_AI_DEMOS
   API_INTEGRATION = GIT_API_INTEGRATION
   GIT_CREDENTIALS = BNK.PUBLIC.GIT_PAT_SECRET
-  ORIGIN = 'https://github.com/sfc-gh-jheisler/BNK_AI_DEMOS.git';
+  ORIGIN = 'https://github.com/sfc-gh-mharris/BNK_AI_DEMOS.git';
 ```
 
 Then navigate to **Snowsight > Projects > Workspaces**, select `BNK_AI_DEMOS`, and open the `kyc_aml/` folder. Execute each SQL file in numbered order.
@@ -45,7 +45,7 @@ Then navigate to **Snowsight > Projects > Workspaces**, select `BNK_AI_DEMOS`, a
 3. Click the **+ Workspace** button (top right)
 4. Select **"From Git repository"**
 5. Fill in the form:
-   - **Repository URL:** `https://github.com/sfc-gh-jheisler/BNK_AI_DEMOS.git`
+   - **Repository URL:** `https://github.com/sfc-gh-mharris/BNK_AI_DEMOS.git`
    - **API Integration:** Select `GIT_API_INTEGRATION` from the dropdown
    - **Authentication method:** Select **"Personal access token"**
    - **Secret:** Browse to `BNK.PUBLIC` and select `GIT_PAT_SECRET`
@@ -67,12 +67,13 @@ Once open, you can:
 Run the SQL scripts in order. Each is idempotent (safe to re-run).
 
 ```
-00_setup.sql          — Database, schema, warehouse, internal stage
-01_ddl.sql            — Tables: CLIENTS, KYC_CASES, DOCUMENTS_METADATA, VERIFICATION_RESULTS, KYC_POLICIES, ALERT_QUEUE
-02_data.sql           — Synthetic data: 100K clients, 200K cases, 500K documents, 25 compliance policies
-03_search_services.sql — Cortex Search over KYC policies (Arctic Embed L v2.0)
-04_document_pipeline.sql — Stored procedures for AI document processing
-05_agent.sql          — KYC Agent with policy search + code execution
+00_setup.sql             - Database, schema, warehouse, directory-enabled internal stage
+01_ddl.sql               - Tables: CLIENTS, KYC_CASES, DOCUMENTS_METADATA, VERIFICATION_RESULTS, KYC_POLICIES, ALERT_QUEUE
+02_data.sql              - Synthetic data: 100K clients, 200K cases, 500K documents, 25 compliance policies, plus 5 showcase demo cases
+03_search_services.sql   - Cortex Search over KYC policies (Arctic Embed L v2.0)
+03b_semantic_view.sql    - Semantic View (SV_KYC_AML) over all 5 structured KYC/AML tables
+04_document_pipeline.sql - Stored procedures for AI document processing and identity verification
+05_agent.sql             - KYC Agent with Cortex Analyst, policy search, and live verification tools
 ```
 
 Alternatively, use the Cortex Code deploy skill: `/deploy-kyc`
@@ -81,13 +82,15 @@ Alternatively, use the Cortex Code deploy skill: `/deploy-kyc`
 
 ### 1. Upload sample documents to the stage
 
-Pre-generated PDFs are in `sample_documents/pdfs/`. Upload them:
+Pre-generated PDFs are in `sample_documents/pdfs/clients/`. Upload them via Snow CLI or SnowSQL (or Snowsight Stage UI):
 
 ```sql
 -- Adjust the file path to your local clone location
 PUT file:///path/to/kyc_aml/sample_documents/pdfs/clients/*.pdf
     @BNK.KYC_AML.KYC_DOCUMENTS/clients/
-    AUTO_COMPRESS=FALSE;
+    AUTO_COMPRESS=FALSE OVERWRITE=TRUE;
+
+ALTER STAGE BNK.KYC_AML.KYC_DOCUMENTS REFRESH;
 ```
 
 To generate more documents locally:
@@ -100,50 +103,58 @@ python sample_documents/generate_pdfs.py --output sample_documents/pdfs --count 
 ### 2. Process a single document
 
 ```sql
--- Pass the relative path within the stage
+-- Pass the relative path within @BNK.KYC_AML.KYC_DOCUMENTS
 CALL BNK.KYC_AML.PROCESS_KYC_DOCUMENT(
-    'clients/<client_id>/Passport_<doc_id>.pdf'
+    'clients/Passport_54866c22-96f2-4967-a248-1d6b72a2310f.pdf'
 );
 ```
 
 Returns a VARIANT with:
-- `classification` — detected document type and confidence
-- `extracted_fields` — structured data (name, DOB, document number, etc.)
-- `parsed_pages` — raw OCR output with layout
+- `classification` and `predicted_type` - detected document type from `AI_CLASSIFY`
+- `extracted_fields` and `field_scores` - structured data and per-field confidence scores from `AI_EXTRACT`
+- `parsed_pages` - raw OCR/layout Markdown output from `AI_PARSE_DOCUMENT`
 
-### 3. Process documents in batch
-
-```sql
--- Process up to 10 pending documents
-CALL BNK.KYC_AML.BATCH_PROCESS_DOCUMENTS(10);
-```
-
-### 4. Verify identity against client master
+### 3. Process staged documents in batch
 
 ```sql
-CALL BNK.KYC_AML.VERIFY_IDENTITY('<client_id>', '<doc_id>');
+-- Process up to 5 staged Pending documents
+CALL BNK.KYC_AML.BATCH_PROCESS_DOCUMENTS(5);
 ```
 
-Compares extracted fields against the CLIENTS table using fuzzy matching (Jaro-Winkler similarity). Produces match/partial/mismatch determination with per-field confidence scores.
+### 4. End-to-end: process and verify against client master
 
-### 5. End-to-end: process and verify in one call
+`02_data.sql` seeds five showcase clients linked to staged sample PDFs:
+- `CL-DEMO-001` (`Oliver Clarke`, UK PEP) + `54866c22-96f2-4967-a248-1d6b72a2310f` -> `Match`
+- `CL-DEMO-002` (`Jen Muller`, High risk) + `99c221cb-eb27-44bd-88d7-b69929da359b` -> `Partial` (surname transliteration)
+- `CL-DEMO-003` (`Marcus Sterling`, High risk) + `f89335ea-0fd0-4e9e-8b72-fedd94795d9a` -> `Mismatch` (wrong person's passport)
+- `CL-DEMO-004` (`Nexus Technology Solutions GmbH`, Corporate) + `f55f0a67-05dd-4903-9200-6e8c95d3e5d3` -> `Match` + flags mislabeled upload (`Passport` vs `FinancialStatement`)
+- `CL-DEMO-005` (`James Williams`, Medium risk) + `5b502551-c7ae-4ba5-a196-aafd4fb16d03` -> `Match` (German Driver's License)
 
 ```sql
-CALL BNK.KYC_AML.PROCESS_AND_VERIFY_DOCUMENT('<client_id>', 'clients/<client_id>/Passport_<doc_id>.pdf');
+CALL BNK.KYC_AML.PROCESS_AND_VERIFY_DOCUMENT('CL-DEMO-001', '54866c22-96f2-4967-a248-1d6b72a2310f');
 ```
+
+### 5. Re-verify identity against client master
+
+```sql
+CALL BNK.KYC_AML.VERIFY_IDENTITY('CL-DEMO-001', '54866c22-96f2-4967-a248-1d6b72a2310f');
+```
+
+Compares extracted fields against `CLIENTS` using Jaro-Winkler name similarity, DOB, ISO-3 nationality, document expiry, and declared vs classified document type.
 
 ## Using the KYC Agent
 
 The agent is available in Snowflake Intelligence (CoWork) after deployment. Sample questions:
 
-- "What are the enhanced due diligence requirements for PEP clients?"
-- "What documents are required for corporate client onboarding?"
-- "How many high-risk clients have overdue periodic reviews?"
-- "Show me all critical alerts from the past 30 days by jurisdiction"
+- "How many high-risk and PEP clients currently have overdue periodic reviews, broken down by priority?"
+- "Review client Oliver Clarke (CL-DEMO-001): process and verify his pending passport and tell me what UK PEP due diligence steps apply."
+- "Process and verify the uploaded documents for Marcus Sterling (CL-DEMO-003) and Nexus Technology Solutions GmbH (CL-DEMO-004) and flag any compliance risks."
+- "Show all open Critical alerts by alert type and summarize our SLA obligations under ongoing monitoring and sanctions policies."
 
 The agent has access to:
-- **KYCPolicySearch** — RAG over 25 compliance policies covering CDD, EDD, PEP, Sanctions, Beneficial Ownership, and Ongoing Monitoring across US/UK/EU/APAC/Global jurisdictions
-- **code_execution** — Python for ad-hoc queries across all KYC tables
+- **KYCAnalyst** - Cortex Analyst over `SV_KYC_AML` across all 5 structured KYC/AML tables
+- **KYCPolicySearch** - RAG over 25 compliance policies across US/UK/EU/APAC/Global jurisdictions with citations
+- **ProcessAndVerifyDocument** & **VerifyIdentity** - Live AI document extraction and client verification procedures
 
 ## Pipeline Architecture
 

@@ -16,6 +16,16 @@ USE SCHEMA KYC_AML;
 USE WAREHOUSE BNK_WH;
 
 -------------------------------------------------------------------------------
+-- Idempotent reset before loading data
+-------------------------------------------------------------------------------
+TRUNCATE TABLE IF EXISTS BNK.KYC_AML.ALERT_QUEUE;
+TRUNCATE TABLE IF EXISTS BNK.KYC_AML.VERIFICATION_RESULTS;
+TRUNCATE TABLE IF EXISTS BNK.KYC_AML.DOCUMENTS_METADATA;
+TRUNCATE TABLE IF EXISTS BNK.KYC_AML.KYC_CASES;
+TRUNCATE TABLE IF EXISTS BNK.KYC_AML.CLIENTS;
+TRUNCATE TABLE IF EXISTS BNK.KYC_AML.KYC_POLICIES;
+
+-------------------------------------------------------------------------------
 -- KYC_POLICIES (25 realistic multi-paragraph compliance policies)
 -------------------------------------------------------------------------------
 INSERT INTO BNK.KYC_AML.KYC_POLICIES (policy_id, title, jurisdiction, category, effective_date, content)
@@ -104,100 +114,151 @@ SELECT * FROM VALUES
 ;
 
 -------------------------------------------------------------------------------
--- CLIENTS (100,000 rows)
+-- CLIENTS (99,995 synthetic + 5 hero showcase clients = 100,000 rows)
 -------------------------------------------------------------------------------
-INSERT INTO BNK.KYC_AML.CLIENTS
-WITH
-first_names AS (
-    SELECT column1 AS first_name, column2 AS region FROM VALUES
-    ('James','US'),('Mary','US'),('Robert','US'),('Patricia','US'),('Michael','US'),('Jennifer','US'),('William','US'),('Elizabeth','US'),('David','US'),('Sarah','US'),
-    ('Oliver','UK'),('Amelia','UK'),('George','UK'),('Charlotte','UK'),('Harry','UK'),('Sophie','UK'),('Thomas','UK'),('Emily','UK'),('Jack','UK'),('Isabella','UK'),
-    ('Takeshi','APAC'),('Yuki','APAC'),('Hiroshi','APAC'),('Sakura','APAC'),('Kenji','APAC'),('Aiko','APAC'),('Wei','APAC'),('Mei','APAC'),('Jin','APAC'),('Hana','APAC'),
-    ('Lukas','EU'),('Emma','EU'),('Maximilian','EU'),('Sofia','EU'),('Felix','EU'),('Anna','EU'),('Leon','EU'),('Marie','EU'),('Paul','EU'),('Clara','EU'),
-    ('Ahmed','APAC'),('Fatima','APAC'),('Mohammed','APAC'),('Aisha','APAC'),('Omar','APAC'),('Layla','APAC'),('Hassan','APAC'),('Noor','APAC'),('Ali','APAC'),('Zara','APAC')
+INSERT INTO BNK.KYC_AML.CLIENTS (
+    client_id, entity_type, first_name, last_name, date_of_birth,
+    company_name, nationality, country_of_residence, risk_rating,
+    onboarding_date, relationship_manager, status
+)
+WITH pools AS (
+    SELECT
+        ARRAY_CONSTRUCT(
+            'James','Mary','Robert','Patricia','Michael','Jennifer','William','Elizabeth','David','Sarah',
+            'Oliver','Amelia','George','Charlotte','Harry','Sophie','Thomas','Emily','Jack','Isabella',
+            'Takeshi','Yuki','Hiroshi','Sakura','Kenji','Aiko','Wei','Mei','Jin','Hana',
+            'Lukas','Emma','Maximilian','Sofia','Felix','Anna','Leon','Marie','Paul','Clara',
+            'Ahmed','Fatima','Mohammed','Aisha','Omar','Layla','Hassan','Noor','Ali','Zara'
+        ) AS first_names,
+        ARRAY_CONSTRUCT(
+            'Smith','Johnson','Williams','Brown','Jones','Davis','Miller','Wilson','Taylor','Anderson',
+            'Thompson','Wright','Clarke','Roberts','Mitchell','Campbell','Stewart','Murray','Walker','Hughes',
+            'Tanaka','Yamamoto','Sato','Suzuki','Watanabe','Chen','Wang','Liu','Kim','Park',
+            'Mueller','Schmidt','Schneider','Fischer','Weber','Rossi','Bianchi','Dubois','Moreau','Martin',
+            'Al-Rashid','Hassan','Ibrahim','Patel','Sharma','Khan','Singh','Nguyen','Tran','Lee'
+        ) AS last_names,
+        ARRAY_CONSTRUCT(
+            'USA','USA','USA','CAN','GBR','GBR','IRL',
+            'DEU','FRA','ITA','ESP','NLD','CHE',
+            'JPN','SGP','HKG','AUS','IND','ARE','KOR'
+        ) AS countries,
+        ARRAY_CONSTRUCT(
+            'Sarah Mitchell','James Crawford','Emma Richardson','Thomas Blackwell','Rachel Kim',
+            'David Nakamura','Maria Santos','Alexander Petrov','Hannah O''Brien','Marcus Williams',
+            'Yuki Tanaka','Robert Chen','Sophia Mueller','Ahmed Al-Fayed','Catherine Dubois'
+        ) AS rm_names,
+        ARRAY_CONSTRUCT(
+            'Meridian Capital Holdings','Pacific Rim Trading Corp','Northern Star Investments','Golden Gate Ventures','Atlas Global Partners',
+            'Pinnacle Financial Group','Sapphire Asset Management','Falcon Industries Ltd','Sterling Commerce International','Eastbridge Securities',
+            'Nexus Technology Solutions','Sovereign Wealth Advisors','Crimson Bay Shipping','Titanium Resources Corp','Emerald Coast Properties',
+            'Summit Peak Capital','Horizon Maritime Services','Quantum Trading LLC','Phoenix Global Logistics','Cobalt Energy Partners'
+        ) AS company_names
 ),
-last_names AS (
-    SELECT column1 AS last_name, column2 AS region FROM VALUES
-    ('Smith','US'),('Johnson','US'),('Williams','US'),('Brown','US'),('Jones','US'),('Davis','US'),('Miller','US'),('Wilson','US'),('Taylor','US'),('Anderson','US'),
-    ('Thompson','UK'),('Wright','UK'),('Clarke','UK'),('Roberts','UK'),('Mitchell','UK'),('Campbell','UK'),('Stewart','UK'),('Murray','UK'),('Walker','UK'),('Hughes','UK'),
-    ('Tanaka','APAC'),('Yamamoto','APAC'),('Sato','APAC'),('Suzuki','APAC'),('Watanabe','APAC'),('Chen','APAC'),('Wang','APAC'),('Liu','APAC'),('Kim','APAC'),('Park','APAC'),
-    ('Mueller','EU'),('Schmidt','EU'),('Schneider','EU'),('Fischer','EU'),('Weber','EU'),('Rossi','EU'),('Bianchi','EU'),('Dubois','EU'),('Moreau','EU'),('Martin','EU'),
-    ('Al-Rashid','APAC'),('Hassan','APAC'),('Ibrahim','APAC'),('Patel','APAC'),('Sharma','APAC'),('Khan','APAC'),('Singh','APAC'),('Nguyen','APAC'),('Tran','APAC'),('Lee','APAC')
-),
-countries AS (
-    SELECT column1 AS code, column2 AS region FROM VALUES
-    ('USA','US'),('USA','US'),('USA','US'),('CAN','US'),('GBR','UK'),('GBR','UK'),('IRL','UK'),
-    ('DEU','EU'),('FRA','EU'),('ITA','EU'),('ESP','EU'),('NLD','EU'),('CHE','EU'),
-    ('JPN','APAC'),('SGP','APAC'),('HKG','APAC'),('AUS','APAC'),('IND','APAC'),('ARE','APAC'),('KOR','APAC')
-),
-rm_names AS (
-    SELECT column1 AS rm_name FROM VALUES
-    ('Sarah Mitchell'),('James Crawford'),('Emma Richardson'),('Thomas Blackwell'),('Rachel Kim'),
-    ('David Nakamura'),('Maria Santos'),('Alexander Petrov'),('Hannah O''Brien'),('Marcus Williams'),
-    ('Yuki Tanaka'),('Robert Chen'),('Sophia Mueller'),('Ahmed Al-Fayed'),('Catherine Dubois')
-),
-company_names AS (
-    SELECT column1 AS comp_name FROM VALUES
-    ('Meridian Capital Holdings'),('Pacific Rim Trading Corp'),('Northern Star Investments'),('Golden Gate Ventures'),('Atlas Global Partners'),
-    ('Pinnacle Financial Group'),('Sapphire Asset Management'),('Falcon Industries Ltd'),('Sterling Commerce International'),('Eastbridge Securities'),
-    ('Nexus Technology Solutions'),('Sovereign Wealth Advisors'),('Crimson Bay Shipping'),('Titanium Resources Corp'),('Emerald Coast Properties'),
-    ('Summit Peak Capital'),('Horizon Maritime Services'),('Quantum Trading LLC'),('Phoenix Global Logistics'),('Cobalt Energy Partners')
+gen AS (
+    SELECT
+        UUID_STRING() AS client_id,
+        UNIFORM(1, 100, RANDOM()) AS r_entity,
+        UNIFORM(0, 49, RANDOM()) AS idx_fn,
+        UNIFORM(0, 49, RANDOM()) AS idx_ln,
+        UNIFORM(0, 19, RANDOM()) AS idx_comp,
+        UNIFORM(1, 999, RANDOM()) AS comp_num,
+        UNIFORM(0, 19, RANDOM()) AS idx_nat,
+        UNIFORM(0, 19, RANDOM()) AS idx_res,
+        UNIFORM(0, 14, RANDOM()) AS idx_rm,
+        UNIFORM(1, 100, RANDOM()) AS r_risk,
+        UNIFORM(1, 100, RANDOM()) AS r_status,
+        UNIFORM(9125, 27375, RANDOM()) AS dob_days_ago,
+        UNIFORM(1, 3650, RANDOM()) AS onboard_days_ago
+    FROM TABLE(GENERATOR(ROWCOUNT => 99995))
 )
 SELECT
-    UUID_STRING() AS client_id,
-    CASE WHEN UNIFORM(1, 100, RANDOM()) <= 70 THEN 'Individual' ELSE 'Corporate' END AS entity_type,
-    CASE WHEN entity_type = 'Individual'
-         THEN (SELECT first_name FROM first_names SAMPLE (1 ROWS))
-         ELSE NULL END AS first_name,
-    CASE WHEN entity_type = 'Individual'
-         THEN (SELECT last_name FROM last_names SAMPLE (1 ROWS))
-         ELSE NULL END AS last_name,
-    CASE WHEN entity_type = 'Corporate'
-         THEN (SELECT comp_name FROM company_names SAMPLE (1 ROWS)) || ' ' || UNIFORM(1,999,RANDOM())::VARCHAR
-         ELSE NULL END AS company_name,
-    (SELECT code FROM countries SAMPLE (1 ROWS)) AS nationality,
-    (SELECT code FROM countries SAMPLE (1 ROWS)) AS country_of_residence,
+    g.client_id,
+    IFF(g.r_entity <= 70, 'Individual', 'Corporate') AS entity_type,
+    IFF(g.r_entity <= 70, p.first_names[g.idx_fn]::VARCHAR, NULL) AS first_name,
+    IFF(g.r_entity <= 70, p.last_names[g.idx_ln]::VARCHAR, NULL) AS last_name,
+    IFF(g.r_entity <= 70, DATEADD('day', -g.dob_days_ago, CURRENT_DATE()), NULL) AS date_of_birth,
+    IFF(g.r_entity > 70, p.company_names[g.idx_comp]::VARCHAR || ' ' || g.comp_num::VARCHAR, NULL) AS company_name,
+    p.countries[g.idx_nat]::VARCHAR AS nationality,
+    p.countries[g.idx_res]::VARCHAR AS country_of_residence,
     CASE
-        WHEN UNIFORM(1, 100, RANDOM()) <= 60 THEN 'Low'
-        WHEN UNIFORM(1, 100, RANDOM()) <= 85 THEN 'Medium'
-        WHEN UNIFORM(1, 100, RANDOM()) <= 95 THEN 'High'
-        WHEN UNIFORM(1, 100, RANDOM()) <= 99 THEN 'PEP'
+        WHEN g.r_risk <= 60 THEN 'Low'
+        WHEN g.r_risk <= 85 THEN 'Medium'
+        WHEN g.r_risk <= 95 THEN 'High'
+        WHEN g.r_risk <= 99 THEN 'PEP'
         ELSE 'Sanctioned'
     END AS risk_rating,
-    DATEADD('day', -UNIFORM(1, 3650, RANDOM()), CURRENT_DATE()) AS onboarding_date,
-    (SELECT rm_name FROM rm_names SAMPLE (1 ROWS)) AS relationship_manager,
+    DATEADD('day', -g.onboard_days_ago, CURRENT_DATE()) AS onboarding_date,
+    p.rm_names[g.idx_rm]::VARCHAR AS relationship_manager,
     CASE
-        WHEN UNIFORM(1, 100, RANDOM()) <= 80 THEN 'Active'
-        WHEN UNIFORM(1, 100, RANDOM()) <= 90 THEN 'UnderReview'
-        WHEN UNIFORM(1, 100, RANDOM()) <= 97 THEN 'Restricted'
+        WHEN g.r_status <= 80 THEN 'Active'
+        WHEN g.r_status <= 90 THEN 'UnderReview'
+        WHEN g.r_status <= 97 THEN 'Restricted'
         ELSE 'Exited'
     END AS status
-FROM TABLE(GENERATOR(ROWCOUNT => 100000));
+FROM gen g
+CROSS JOIN pools p;
 
--------------------------------------------------------------------------------
--- KYC_CASES (200,000 rows)
--------------------------------------------------------------------------------
-INSERT INTO BNK.KYC_AML.KYC_CASES
-WITH client_ids AS (
-    SELECT client_id FROM BNK.KYC_AML.CLIENTS SAMPLE (200000 ROWS)
-),
-analyst_names AS (
-    SELECT column1 AS analyst_name FROM VALUES
-    ('Lisa Park'),('Daniel Foster'),('Rebecca Okonkwo'),('Stuart MacLeod'),('Priya Sharma'),
-    ('Marcus Thompson'),('Anna Kowalski'),('Yusuf Demir'),('Catherine Leung'),('Jonathan Price'),
-    ('Ingrid Bergstrom'),('Rajesh Patel'),('Gabrielle Martin'),('Kenji Watanabe'),('Olivia Chen'),
-    ('Samuel Edwards'),('Fatima Zahra'),('Henrik Johansson'),('Maria Gonzalez'),('Alistair Campbell')
+-- Insert 5 deterministic showcase clients matched to staged sample PDFs
+INSERT INTO BNK.KYC_AML.CLIENTS (
+    client_id, entity_type, first_name, last_name, date_of_birth,
+    company_name, nationality, country_of_residence, risk_rating,
+    onboarding_date, relationship_manager, status
 )
 SELECT
-    UUID_STRING() AS case_id,
-    client_id,
-    CASE UNIFORM(1, 4, RANDOM())
+    column1, column2, column3, column4, TRY_TO_DATE(column5),
+    column6, column7, column8, column9,
+    DATEADD('day', column10, CURRENT_DATE()), column11, column12
+FROM VALUES
+    ('CL-DEMO-001', 'Individual', 'Oliver', 'Clarke', '1995-01-17', NULL, 'GBR', 'GBR', 'PEP', -420, 'Emma Richardson', 'UnderReview'),
+    ('CL-DEMO-002', 'Individual', 'Jen', 'Muller', '1983-09-18', NULL, 'GBR', 'GBR', 'High', -380, 'Emma Richardson', 'UnderReview'),
+    ('CL-DEMO-003', 'Individual', 'Marcus', 'Sterling', '1974-11-03', NULL, 'USA', 'USA', 'High', -30, 'James Crawford', 'Restricted'),
+    ('CL-DEMO-004', 'Corporate', NULL, NULL, NULL, 'Nexus Technology Solutions GmbH', 'DEU', 'DEU', 'High', -540, 'Sophia Mueller', 'UnderReview'),
+    ('CL-DEMO-005', 'Individual', 'James', 'Williams', '1966-02-25', NULL, 'DEU', 'JPN', 'Medium', -730, 'David Nakamura', 'Active');
+
+-------------------------------------------------------------------------------
+-- KYC_CASES (199,995 synthetic + 5 hero showcase cases = 200,000 rows)
+-------------------------------------------------------------------------------
+INSERT INTO BNK.KYC_AML.KYC_CASES (
+    case_id, client_id, case_type, status, priority,
+    assigned_analyst, opened_date, due_date, closed_date, notes
+)
+WITH numbered_clients AS (
+    SELECT client_id, ROW_NUMBER() OVER (ORDER BY client_id) AS rn
+    FROM BNK.KYC_AML.CLIENTS
+    WHERE client_id NOT LIKE 'CL-DEMO-%'
+),
+pools AS (
+    SELECT ARRAY_CONSTRUCT(
+        'Lisa Park','Daniel Foster','Rebecca Okonkwo','Stuart MacLeod','Priya Sharma',
+        'Marcus Thompson','Anna Kowalski','Yusuf Demir','Catherine Leung','Jonathan Price',
+        'Ingrid Bergstrom','Rajesh Patel','Gabrielle Martin','Kenji Watanabe','Olivia Chen',
+        'Samuel Edwards','Fatima Zahra','Henrik Johansson','Maria Gonzalez','Alistair Campbell'
+    ) AS analysts
+),
+gen AS (
+    SELECT
+        SEQ4() AS seq,
+        UUID_STRING() AS case_id,
+        UNIFORM(1, 4, RANDOM()) AS r_type,
+        UNIFORM(1, 6, RANDOM()) AS r_status,
+        UNIFORM(1, 4, RANDOM()) AS r_priority,
+        UNIFORM(0, 19, RANDOM()) AS idx_analyst,
+        UNIFORM(1, 730, RANDOM()) AS opened_days_ago,
+        UNIFORM(7, 60, RANDOM()) AS sla_days,
+        UNIFORM(1, 30, RANDOM()) AS close_days,
+        UNIFORM(1, 5, RANDOM()) AS r_note
+    FROM TABLE(GENERATOR(ROWCOUNT => 199995))
+)
+SELECT
+    g.case_id,
+    c.client_id,
+    CASE g.r_type
         WHEN 1 THEN 'NewClient'
         WHEN 2 THEN 'PeriodicReview'
         WHEN 3 THEN 'TriggerEvent'
         ELSE 'EnhancedDueDiligence'
     END AS case_type,
-    CASE UNIFORM(1, 6, RANDOM())
+    CASE g.r_status
         WHEN 1 THEN 'Open'
         WHEN 2 THEN 'InReview'
         WHEN 3 THEN 'PendingDocuments'
@@ -205,41 +266,69 @@ SELECT
         WHEN 5 THEN 'Rejected'
         ELSE 'Escalated'
     END AS status,
-    CASE UNIFORM(1, 4, RANDOM())
+    CASE g.r_priority
         WHEN 1 THEN 'Low'
         WHEN 2 THEN 'Medium'
         WHEN 3 THEN 'High'
         ELSE 'Critical'
     END AS priority,
-    (SELECT analyst_name FROM analyst_names SAMPLE (1 ROWS)) AS assigned_analyst,
-    DATEADD('day', -UNIFORM(1, 730, RANDOM()), CURRENT_DATE()) AS opened_date,
-    DATEADD('day', UNIFORM(7, 60, RANDOM()), opened_date) AS due_date,
-    CASE WHEN status IN ('Approved', 'Rejected')
-         THEN DATEADD('day', UNIFORM(1, 30, RANDOM()), opened_date)
-         ELSE NULL END AS closed_date,
-    CASE UNIFORM(1, 5, RANDOM())
+    p.analysts[g.idx_analyst]::VARCHAR AS assigned_analyst,
+    DATEADD('day', -g.opened_days_ago, CURRENT_DATE()) AS opened_date,
+    DATEADD('day', g.sla_days - g.opened_days_ago, CURRENT_DATE()) AS due_date,
+    IFF(g.r_status IN (4, 5), DATEADD('day', g.close_days - g.opened_days_ago, CURRENT_DATE()), NULL) AS closed_date,
+    CASE g.r_note
         WHEN 1 THEN 'Initial review completed. Awaiting additional documentation from client.'
         WHEN 2 THEN 'Escalated due to adverse media hit. Pending senior analyst review.'
         WHEN 3 THEN 'Standard periodic review. No concerns identified to date.'
         WHEN 4 THEN 'Client provided updated beneficial ownership declaration. Verification in progress.'
         ELSE 'Risk rating reassessment triggered by transaction monitoring alert.'
     END AS notes
-FROM client_ids;
+FROM gen g
+JOIN numbered_clients c ON c.rn = MOD(g.seq, 99995) + 1
+CROSS JOIN pools p;
 
--------------------------------------------------------------------------------
--- DOCUMENTS_METADATA (500,000 rows)
--------------------------------------------------------------------------------
-INSERT INTO BNK.KYC_AML.DOCUMENTS_METADATA
-WITH case_data AS (
-    SELECT case_id, client_id
-    FROM BNK.KYC_AML.KYC_CASES
-    SAMPLE (500000 ROWS)
+INSERT INTO BNK.KYC_AML.KYC_CASES (
+    case_id, client_id, case_type, status, priority,
+    assigned_analyst, opened_date, due_date, closed_date, notes
 )
 SELECT
-    UUID_STRING() AS doc_id,
-    case_id,
-    client_id,
-    CASE UNIFORM(1, 7, RANDOM())
+    column1, column2, column3, column4, column5,
+    column6, DATEADD('day', column7, CURRENT_DATE()), DATEADD('day', column8, CURRENT_DATE()), NULL, column9
+FROM VALUES
+    ('CASE-DEMO-001', 'CL-DEMO-001', 'PeriodicReview', 'PendingDocuments', 'Critical', 'Lisa Park', -21, -7, 'Annual UK PEP periodic review overdue. Updated UK passport uploaded and awaiting AI verification.'),
+    ('CASE-DEMO-002', 'CL-DEMO-002', 'EnhancedDueDiligence', 'InReview', 'High', 'Daniel Foster', -10, 4, 'High-risk EDD refresh. Passport uploaded; checking transliteration variance on surname.'),
+    ('CASE-DEMO-003', 'CL-DEMO-003', 'NewClient', 'Escalated', 'Critical', 'Rebecca Okonkwo', -5, -4, 'Digital onboarding flagged suspicious identity document upload for high-risk applicant.'),
+    ('CASE-DEMO-004', 'CL-DEMO-004', 'PeriodicReview', 'InReview', 'High', 'Priya Sharma', -12, 2, 'Corporate CDD refresh for Nexus Technology Solutions GmbH. Uploaded file declared as Passport.'),
+    ('CASE-DEMO-005', 'CL-DEMO-005', 'PeriodicReview', 'InReview', 'Medium', 'Kenji Watanabe', -8, 6, 'Routine 3-year periodic review. Japanese driver license submitted for identity confirmation.');
+
+-------------------------------------------------------------------------------
+-- DOCUMENTS_METADATA (499,975 synthetic + 25 real staged PDFs = 500,000 rows)
+-------------------------------------------------------------------------------
+INSERT INTO BNK.KYC_AML.DOCUMENTS_METADATA (
+    doc_id, case_id, client_id, doc_type, file_path,
+    upload_date, file_size_bytes, extraction_status, classification_confidence
+)
+WITH numbered_cases AS (
+    SELECT case_id, client_id, ROW_NUMBER() OVER (ORDER BY case_id) AS rn
+    FROM BNK.KYC_AML.KYC_CASES
+    WHERE case_id NOT LIKE 'CASE-DEMO-%'
+),
+gen AS (
+    SELECT
+        SEQ4() AS seq,
+        UUID_STRING() AS doc_id,
+        UNIFORM(1, 7, RANDOM()) AS r_doctype,
+        UNIFORM(1, 63072000, RANDOM()) AS upload_secs_ago,
+        UNIFORM(50000, 15000000, RANDOM()) AS file_size_bytes,
+        UNIFORM(1, 10, RANDOM()) AS r_status,
+        ROUND(UNIFORM(60, 99, RANDOM()) / 100.0, 3) AS conf
+    FROM TABLE(GENERATOR(ROWCOUNT => 499975))
+)
+SELECT
+    g.doc_id,
+    kc.case_id,
+    kc.client_id,
+    CASE g.r_doctype
         WHEN 1 THEN 'Passport'
         WHEN 2 THEN 'DriversLicense'
         WHEN 3 THEN 'NationalID'
@@ -248,102 +337,226 @@ SELECT
         WHEN 6 THEN 'CorporateRegistry'
         ELSE 'BeneficialOwnership'
     END AS doc_type,
-    'clients/' || client_id || '/' || doc_type || '_' || doc_id || '.pdf' AS file_path,
-    DATEADD('second', -UNIFORM(1, 63072000, RANDOM()), CURRENT_TIMESTAMP()) AS upload_date,
-    UNIFORM(50000, 15000000, RANDOM()) AS file_size_bytes,
-    CASE UNIFORM(1, 10, RANDOM())
+    'synthetic/' || kc.client_id || '/' ||
+    CASE g.r_doctype
+        WHEN 1 THEN 'Passport'
+        WHEN 2 THEN 'DriversLicense'
+        WHEN 3 THEN 'NationalID'
+        WHEN 4 THEN 'FinancialStatement'
+        WHEN 5 THEN 'UtilityBill'
+        WHEN 6 THEN 'CorporateRegistry'
+        ELSE 'BeneficialOwnership'
+    END || '_' || g.doc_id || '.pdf' AS file_path,
+    DATEADD('second', -g.upload_secs_ago, CURRENT_TIMESTAMP()) AS upload_date,
+    g.file_size_bytes,
+    CASE g.r_status
         WHEN 1 THEN 'Pending'
         WHEN 2 THEN 'Processing'
         WHEN 10 THEN 'Failed'
         ELSE 'Completed'
     END AS extraction_status,
-    CASE WHEN extraction_status IN ('Completed', 'Failed')
-         THEN ROUND(UNIFORM(60, 99, RANDOM()) / 100.0, 3)
-         ELSE NULL END AS classification_confidence
-FROM case_data;
+    IFF(g.r_status NOT IN (1, 2), g.conf, NULL) AS classification_confidence
+FROM gen g
+JOIN numbered_cases kc ON kc.rn = MOD(g.seq, 199995) + 1;
+
+-- Register the 5 primary showcase PDFs onto CASE-DEMO-001..005 as Pending
+INSERT INTO BNK.KYC_AML.DOCUMENTS_METADATA (
+    doc_id, case_id, client_id, doc_type, file_path,
+    upload_date, file_size_bytes, extraction_status, classification_confidence
+)
+SELECT
+    column1, column2, column3, column4, column5,
+    DATEADD('minute', column6, CURRENT_TIMESTAMP()), column7, 'Pending', NULL
+FROM VALUES
+    ('54866c22-96f2-4967-a248-1d6b72a2310f', 'CASE-DEMO-001', 'CL-DEMO-001', 'Passport', 'clients/Passport_54866c22-96f2-4967-a248-1d6b72a2310f.pdf', -15, 1680),
+    ('99c221cb-eb27-44bd-88d7-b69929da359b', 'CASE-DEMO-002', 'CL-DEMO-002', 'Passport', 'clients/Passport_99c221cb-eb27-44bd-88d7-b69929da359b.pdf', -25, 1680),
+    ('f89335ea-0fd0-4e9e-8b72-fedd94795d9a', 'CASE-DEMO-003', 'CL-DEMO-003', 'Passport', 'clients/Passport_f89335ea-0fd0-4e9e-8b72-fedd94795d9a.pdf', -35, 1680),
+    ('f55f0a67-05dd-4903-9200-6e8c95d3e5d3', 'CASE-DEMO-004', 'CL-DEMO-004', 'Passport', 'clients/FinancialStatement_f55f0a67-05dd-4903-9200-6e8c95d3e5d3.pdf', -45, 2240),
+    ('5b502551-c7ae-4ba5-a196-aafd4fb16d03', 'CASE-DEMO-005', 'CL-DEMO-005', 'DriversLicense', 'clients/DriversLicense_5b502551-c7ae-4ba5-a196-aafd4fb16d03.pdf', -55, 1450);
+
+-- Register the remaining 20 staged sample PDFs onto synthetic cases so BATCH_PROCESS_DOCUMENTS can process any batch size up to 25
+INSERT INTO BNK.KYC_AML.DOCUMENTS_METADATA (
+    doc_id, case_id, client_id, doc_type, file_path,
+    upload_date, file_size_bytes, extraction_status, classification_confidence
+)
+WITH batch_cases AS (
+    SELECT case_id, client_id, ROW_NUMBER() OVER (ORDER BY case_id) AS rn
+    FROM BNK.KYC_AML.KYC_CASES
+    WHERE case_id NOT LIKE 'CASE-DEMO-%'
+    QUALIFY rn <= 20
+),
+extra_pdfs AS (
+    SELECT
+        ROW_NUMBER() OVER (ORDER BY column1) AS rn,
+        column1 AS doc_id,
+        column2 AS doc_type,
+        column3 AS file_path,
+        column4 AS mins_ago,
+        column5 AS file_size_bytes
+    FROM VALUES
+        ('0641f4b7-80e4-4d2f-85ba-a2c688d87571', 'DriversLicense', 'clients/DriversLicense_0641f4b7-80e4-4d2f-85ba-a2c688d87571.pdf', -120, 1450),
+        ('15d74bb9-eb41-4abb-b3d9-b881bf3e45fa', 'DriversLicense', 'clients/DriversLicense_15d74bb9-eb41-4abb-b3d9-b881bf3e45fa.pdf', -130, 1450),
+        ('23bd9be0-4d46-4ee2-a779-2bca8e785a86', 'DriversLicense', 'clients/DriversLicense_23bd9be0-4d46-4ee2-a779-2bca8e785a86.pdf', -140, 1450),
+        ('280306fb-06de-4f1e-a4d7-4f11011fbefc', 'DriversLicense', 'clients/DriversLicense_280306fb-06de-4f1e-a4d7-4f11011fbefc.pdf', -150, 1450),
+        ('2efa1d9f-6551-493a-a0e2-56e0f892b15b', 'DriversLicense', 'clients/DriversLicense_2efa1d9f-6551-493a-a0e2-56e0f892b15b.pdf', -160, 1450),
+        ('3ba8b529-7871-44fe-92f2-b19c9367135f', 'DriversLicense', 'clients/DriversLicense_3ba8b529-7871-44fe-92f2-b19c9367135f.pdf', -170, 1450),
+        ('f4f843f3-00ca-4cfa-8b6e-168b1f52fca3', 'DriversLicense', 'clients/DriversLicense_f4f843f3-00ca-4cfa-8b6e-168b1f52fca3.pdf', -180, 1450),
+        ('12afa253-fdc1-485c-b56a-37aa7976f888', 'Passport', 'clients/Passport_12afa253-fdc1-485c-b56a-37aa7976f888.pdf', -190, 1680),
+        ('19342e4a-a9bd-4cee-938e-4dc59d28c730', 'Passport', 'clients/Passport_19342e4a-a9bd-4cee-938e-4dc59d28c730.pdf', -200, 1680),
+        ('7c180d6b-4dab-4ff7-bb2d-9c213916be36', 'Passport', 'clients/Passport_7c180d6b-4dab-4ff7-bb2d-9c213916be36.pdf', -210, 1680),
+        ('7d486106-074f-4880-ad1f-911bd0caa2d7', 'Passport', 'clients/Passport_7d486106-074f-4880-ad1f-911bd0caa2d7.pdf', -220, 1680),
+        ('9520d4db-c7b6-4da5-bbcc-fdee08a8f93f', 'Passport', 'clients/Passport_9520d4db-c7b6-4da5-bbcc-fdee08a8f93f.pdf', -230, 1680),
+        ('966de983-a059-4003-8d06-0955ce25a605', 'Passport', 'clients/Passport_966de983-a059-4003-8d06-0955ce25a605.pdf', -240, 1680),
+        ('9918196a-5af5-4698-b7a1-efbe3ee1a66a', 'Passport', 'clients/Passport_9918196a-5af5-4698-b7a1-efbe3ee1a66a.pdf', -250, 1680),
+        ('9ad2c9ca-8b5a-4de6-90fb-81c7c82840cb', 'Passport', 'clients/Passport_9ad2c9ca-8b5a-4de6-90fb-81c7c82840cb.pdf', -260, 1680),
+        ('ab0f02de-9a1f-4c5f-b431-28cd8adc81f5', 'Passport', 'clients/Passport_ab0f02de-9a1f-4c5f-b431-28cd8adc81f5.pdf', -270, 1680),
+        ('ae6e0379-6808-41a6-b282-5374aa404692', 'Passport', 'clients/Passport_ae6e0379-6808-41a6-b282-5374aa404692.pdf', -280, 1680),
+        ('ca057517-a077-404b-ab24-4f3963c22eee', 'Passport', 'clients/Passport_ca057517-a077-404b-ab24-4f3963c22eee.pdf', -290, 1680),
+        ('f6f63947-4e0d-4383-8ba0-ffd2e16a7651', 'Passport', 'clients/Passport_f6f63947-4e0d-4383-8ba0-ffd2e16a7651.pdf', -300, 1680),
+        ('fb30d168-4ec8-4396-a429-d49840ba9d3c', 'Passport', 'clients/Passport_fb30d168-4ec8-4396-a429-d49840ba9d3c.pdf', -310, 1680)
+)
+SELECT
+    ep.doc_id,
+    bc.case_id,
+    bc.client_id,
+    ep.doc_type,
+    ep.file_path,
+    DATEADD('minute', ep.mins_ago, CURRENT_TIMESTAMP()),
+    ep.file_size_bytes,
+    'Pending',
+    NULL
+FROM extra_pdfs ep
+JOIN batch_cases bc ON bc.rn = ep.rn;
 
 -------------------------------------------------------------------------------
--- VERIFICATION_RESULTS (500,000 rows)
+-- VERIFICATION_RESULTS (1:1 for all Completed documents in DOCUMENTS_METADATA)
 -------------------------------------------------------------------------------
-INSERT INTO BNK.KYC_AML.VERIFICATION_RESULTS
-WITH doc_data AS (
-    SELECT dm.doc_id, dm.client_id, dm.doc_type,
-           c.first_name, c.last_name, c.nationality
+INSERT INTO BNK.KYC_AML.VERIFICATION_RESULTS (
+    result_id, doc_id, extracted_fields, confidence_score,
+    ai_classification, verified_by, verification_date, match_status
+)
+WITH pools AS (
+    SELECT ARRAY_CONSTRUCT(
+        'SYSTEM','SYSTEM','SYSTEM','SYSTEM','SYSTEM','SYSTEM','SYSTEM','SYSTEM',
+        'Lisa Park','Daniel Foster','Rebecca Okonkwo','Priya Sharma'
+    ) AS verifiers
+),
+completed_docs AS (
+    SELECT
+        dm.doc_id,
+        dm.doc_type,
+        c.entity_type,
+        c.first_name,
+        c.last_name,
+        c.date_of_birth,
+        c.company_name,
+        c.nationality,
+        UNIFORM(0, 11, RANDOM()) AS idx_verifier,
+        UNIFORM(1, 100, RANDOM()) AS r_match,
+        UNIFORM(1, 31536000, RANDOM()) AS ver_secs_ago,
+        ROUND(UNIFORM(72, 99, RANDOM()) / 100.0, 3) AS conf_score,
+        UNIFORM(1, 10, RANDOM()) AS exp_years,
+        UNIFORM(1000000, 9999999, RANDOM()) AS doc_seq
     FROM BNK.KYC_AML.DOCUMENTS_METADATA dm
     JOIN BNK.KYC_AML.CLIENTS c ON dm.client_id = c.client_id
     WHERE dm.extraction_status = 'Completed'
-    SAMPLE (500000 ROWS)
-),
-verifier_names AS (
-    SELECT column1 AS verifier FROM VALUES
-    ('SYSTEM'),('SYSTEM'),('SYSTEM'),('SYSTEM'),('SYSTEM'),('SYSTEM'),('SYSTEM'),('SYSTEM'),
-    ('Lisa Park'),('Daniel Foster'),('Rebecca Okonkwo'),('Priya Sharma')
 )
 SELECT
     UUID_STRING() AS result_id,
-    doc_id,
+    cd.doc_id,
     OBJECT_CONSTRUCT(
-        'full_name', COALESCE(first_name || ' ' || last_name, 'Corporate Entity'),
-        'date_of_birth', DATEADD('year', -UNIFORM(25, 75, RANDOM()), CURRENT_DATE())::VARCHAR,
-        'document_number', CASE doc_type
-            WHEN 'Passport' THEN 'P' || LPAD(UNIFORM(1000000, 9999999, RANDOM())::VARCHAR, 7, '0')
-            WHEN 'DriversLicense' THEN 'DL-' || LPAD(UNIFORM(100000, 999999, RANDOM())::VARCHAR, 6, '0')
-            WHEN 'NationalID' THEN 'NID' || LPAD(UNIFORM(10000000, 99999999, RANDOM())::VARCHAR, 8, '0')
-            ELSE 'REF-' || LPAD(UNIFORM(100000, 999999, RANDOM())::VARCHAR, 6, '0')
+        'full_name', IFF(cd.entity_type = 'Individual', cd.first_name || ' ' || cd.last_name, cd.company_name),
+        'date_of_birth', cd.date_of_birth::VARCHAR,
+        'document_number', CASE cd.doc_type
+            WHEN 'Passport' THEN 'P' || cd.doc_seq::VARCHAR
+            WHEN 'DriversLicense' THEN 'DL-' || SUBSTR(cd.doc_seq::VARCHAR, 1, 6)
+            WHEN 'NationalID' THEN 'NID-' || cd.doc_seq::VARCHAR
+            ELSE 'REF-' || SUBSTR(cd.doc_seq::VARCHAR, 1, 6)
         END,
-        'issuing_country', COALESCE(nationality, 'GBR'),
-        'expiry_date', DATEADD('year', UNIFORM(1, 10, RANDOM()), CURRENT_DATE())::VARCHAR,
-        'extraction_timestamp', CURRENT_TIMESTAMP()::VARCHAR
+        'issuing_country_code', COALESCE(cd.nationality, 'GBR'),
+        'nationality', COALESCE(cd.nationality, 'GBR'),
+        'expiry_date', DATEADD('year', cd.exp_years, CURRENT_DATE())::VARCHAR
     ) AS extracted_fields,
-    ROUND(UNIFORM(65, 99, RANDOM()) / 100.0, 3) AS confidence_score,
-    doc_type AS ai_classification,
-    (SELECT verifier FROM verifier_names SAMPLE (1 ROWS)) AS verified_by,
-    DATEADD('second', -UNIFORM(1, 31536000, RANDOM()), CURRENT_TIMESTAMP()) AS verification_date,
+    cd.conf_score AS confidence_score,
+    cd.doc_type AS ai_classification,
+    p.verifiers[cd.idx_verifier]::VARCHAR AS verified_by,
+    DATEADD('second', -cd.ver_secs_ago, CURRENT_TIMESTAMP()) AS verification_date,
     CASE
-        WHEN UNIFORM(1, 100, RANDOM()) <= 70 THEN 'Match'
-        WHEN UNIFORM(1, 100, RANDOM()) <= 85 THEN 'Partial'
-        WHEN UNIFORM(1, 100, RANDOM()) <= 95 THEN 'ManualReviewRequired'
+        WHEN cd.r_match <= 70 THEN 'Match'
+        WHEN cd.r_match <= 85 THEN 'Partial'
+        WHEN cd.r_match <= 95 THEN 'ManualReviewRequired'
         ELSE 'Mismatch'
     END AS match_status
-FROM doc_data;
+FROM completed_docs cd
+CROSS JOIN pools p;
 
 -------------------------------------------------------------------------------
--- ALERT_QUEUE (50,000 rows)
+-- ALERT_QUEUE (49,997 synthetic + 3 hero showcase alerts = 50,000 rows)
 -------------------------------------------------------------------------------
-INSERT INTO BNK.KYC_AML.ALERT_QUEUE
-WITH client_ids AS (
-    SELECT client_id FROM BNK.KYC_AML.CLIENTS SAMPLE (50000 ROWS)
+INSERT INTO BNK.KYC_AML.ALERT_QUEUE (
+    alert_id, client_id, alert_type, severity,
+    created_date, status, assigned_to
+)
+WITH sampled_clients AS (
+    SELECT client_id, ROW_NUMBER() OVER (ORDER BY client_id) AS rn
+    FROM BNK.KYC_AML.CLIENTS
+    WHERE client_id NOT LIKE 'CL-DEMO-%'
+    QUALIFY rn <= 49997
 ),
-investigator_names AS (
-    SELECT column1 AS investigator FROM VALUES
-    ('Lisa Park'),('Daniel Foster'),('Rebecca Okonkwo'),('Stuart MacLeod'),('Priya Sharma'),
-    ('Marcus Thompson'),('Anna Kowalski'),('Yusuf Demir'),('Catherine Leung'),('Jonathan Price')
+pools AS (
+    SELECT ARRAY_CONSTRUCT(
+        'Lisa Park','Daniel Foster','Rebecca Okonkwo','Stuart MacLeod','Priya Sharma',
+        'Marcus Thompson','Anna Kowalski','Yusuf Demir','Catherine Leung','Jonathan Price'
+    ) AS investigators
+),
+gen AS (
+    SELECT
+        ROW_NUMBER() OVER (ORDER BY SEQ4()) AS rn,
+        UUID_STRING() AS alert_id,
+        UNIFORM(1, 5, RANDOM()) AS r_type,
+        UNIFORM(1, 4, RANDOM()) AS r_sev,
+        UNIFORM(1, 15768000, RANDOM()) AS secs_ago,
+        UNIFORM(1, 5, RANDOM()) AS r_status,
+        UNIFORM(0, 9, RANDOM()) AS idx_inv
+    FROM TABLE(GENERATOR(ROWCOUNT => 49997))
 )
 SELECT
-    UUID_STRING() AS alert_id,
-    client_id,
-    CASE UNIFORM(1, 5, RANDOM())
+    g.alert_id,
+    sc.client_id,
+    CASE g.r_type
         WHEN 1 THEN 'SanctionsHit'
         WHEN 2 THEN 'AdverseMedia'
         WHEN 3 THEN 'UnusualActivity'
         WHEN 4 THEN 'DocumentExpiry'
         ELSE 'RiskRatingChange'
     END AS alert_type,
-    CASE UNIFORM(1, 4, RANDOM())
+    CASE g.r_sev
         WHEN 1 THEN 'Low'
         WHEN 2 THEN 'Medium'
         WHEN 3 THEN 'High'
         ELSE 'Critical'
     END AS severity,
-    DATEADD('second', -UNIFORM(1, 15768000, RANDOM()), CURRENT_TIMESTAMP()) AS created_date,
-    CASE UNIFORM(1, 5, RANDOM())
+    DATEADD('second', -g.secs_ago, CURRENT_TIMESTAMP()) AS created_date,
+    CASE g.r_status
         WHEN 1 THEN 'New'
         WHEN 2 THEN 'Assigned'
         WHEN 3 THEN 'Investigating'
         WHEN 4 THEN 'Resolved'
         ELSE 'FalsePositive'
     END AS status,
-    CASE WHEN status IN ('Assigned', 'Investigating')
-         THEN (SELECT investigator FROM investigator_names SAMPLE (1 ROWS))
-         ELSE NULL END AS assigned_to
-FROM client_ids;
+    IFF(g.r_status IN (2, 3), p.investigators[g.idx_inv]::VARCHAR, NULL) AS assigned_to
+FROM gen g
+JOIN sampled_clients sc ON sc.rn = g.rn
+CROSS JOIN pools p;
+
+INSERT INTO BNK.KYC_AML.ALERT_QUEUE (
+    alert_id, client_id, alert_type, severity,
+    created_date, status, assigned_to
+)
+SELECT
+    column1, column2, column3, column4,
+    DATEADD('hour', column5, CURRENT_TIMESTAMP()), column6, column7
+FROM VALUES
+    ('ALT-DEMO-001', 'CL-DEMO-001', 'AdverseMedia', 'Critical', -6, 'Investigating', 'Lisa Park'),
+    ('ALT-DEMO-002', 'CL-DEMO-003', 'SanctionsHit', 'Critical', -2, 'New', NULL),
+    ('ALT-DEMO-003', 'CL-DEMO-004', 'UnusualActivity', 'High', -18, 'Assigned', 'Priya Sharma');

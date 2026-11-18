@@ -14,7 +14,7 @@ Deploys the Customer 360 use case from the `bnk-ai-demos` repository. This creat
 
 ## Prerequisites
 
-- Cloned repo: `https://github.com/sfc-gh-jheisler/BNK_AI_DEMOS`
+- Cloned repo: `https://github.com/sfc-gh-mharris/BNK_AI_DEMOS`
 - ACCOUNTADMIN or role with CREATE DATABASE, CREATE WAREHOUSE privileges
 - Snowflake account with Cortex AI features enabled
 

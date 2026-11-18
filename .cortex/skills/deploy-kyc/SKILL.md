@@ -7,15 +7,16 @@ description: "Deploy the KYC/AML banking AI demo use case to Snowflake. Creates 
 
 Deploys the KYC/AML use case from the `bnk-ai-demos` repository. This creates:
 - Database and KYC_AML schema
-- Tables: KYC_CASES, CUSTOMERS_KYC, DOCUMENTS_METADATA, DOCUMENT_EXTRACTIONS, KYC_POLICIES, RISK_ALERTS, SAR_FILINGS
-- Document Pipeline: AI_PARSE_DOCUMENT + AI_CLASSIFY + AI_EXTRACT for identity documents
+- Tables: CLIENTS, KYC_CASES, DOCUMENTS_METADATA, VERIFICATION_RESULTS, KYC_POLICIES, ALERT_QUEUE
+- Semantic View: SV_KYC_AML (across all 5 structured KYC/AML tables)
+- Document Pipeline: AI_PARSE_DOCUMENT + AI_CLASSIFY + AI_EXTRACT + VERIFY_IDENTITY
 - Search Service: KYC_POLICY_SEARCH
-- Agent: KYC_AGENT (combines Search + document classification tools)
+- Agent: KYC_AGENT (combines Cortex Analyst, Cortex Search, and live document verification tools)
 - Stage: @DB.SCHEMA.KYC_DOCUMENTS for PDF uploads
 
 ## Prerequisites
 
-- Cloned repo: `https://github.com/sfc-gh-jheisler/BNK_AI_DEMOS`
+- Cloned repo: `https://github.com/sfc-gh-mharris/BNK_AI_DEMOS`
 - ACCOUNTADMIN or role with CREATE DATABASE, CREATE WAREHOUSE, CREATE STAGE privileges
 - Snowflake account with Cortex AI features enabled (AI_PARSE_DOCUMENT requires Arctic or compatible model access)
 
@@ -53,7 +54,7 @@ Find the cloned repo on disk. Check common locations:
 2. `~/Documents/GitHub/BNK_AI_DEMOS/`
 3. Ask user if not found
 
-Verify the `kyc_aml/` subfolder exists with files: `00_setup.sql`, `01_ddl.sql`, `02_data.sql`, `03_search_services.sql`, `04_document_pipeline.sql`, `05_agent.sql`.
+Verify the `kyc_aml/` subfolder exists with files: `00_setup.sql`, `01_ddl.sql`, `02_data.sql`, `03_search_services.sql`, `03b_semantic_view.sql`, `04_document_pipeline.sql`, `05_agent.sql`.
 
 ### Step 2: Execute Deployment Scripts in Order
 
@@ -62,16 +63,17 @@ Execute each SQL file sequentially using `snowflake_sql_execute`. Read each file
 **Before executing each statement**, apply the deployment configuration substitutions from the Configuration section above. Every reference to the default database, warehouse, and schema must be replaced with the user's configured values.
 
 **Execution order:**
-1. `00_setup.sql` — Creates database, schema, warehouse (skip warehouse creation if user specified an existing warehouse)
-2. `01_ddl.sql` — Creates tables and internal stage (substitute stage FQN)
-3. `02_data.sql` — Inserts synthetic KYC case data, customer records, risk alerts
-4. `03_search_services.sql` — Creates KYC_POLICY_SEARCH service (substitute `WAREHOUSE =` clause and fully-qualified source table name)
-5. `04_document_pipeline.sql` — Creates stored procedures for document processing (substitute fully-qualified stage and table references inside procedure bodies)
-6. `05_agent.sql` — Creates KYC_AGENT (substitute `execution_environment.warehouse` and search service FQN in tool definitions)
+1. `00_setup.sql` - Creates database, schema, warehouse, and directory-enabled stage (skip warehouse creation if user specified an existing warehouse)
+2. `01_ddl.sql` - Creates tables
+3. `02_data.sql` - Inserts synthetic KYC case data, client records, risk alerts, and 5 showcase demo cases
+4. `03_search_services.sql` - Creates KYC_POLICY_SEARCH service (substitute `WAREHOUSE =` clause and fully-qualified source table name)
+5. `03b_semantic_view.sql` - Creates SV_KYC_AML semantic view over the 5 structured KYC/AML tables
+6. `04_document_pipeline.sql` - Creates stored procedures for document processing and identity verification (substitute fully-qualified stage and table references inside procedure bodies)
+7. `05_agent.sql` - Creates KYC_AGENT (substitute `execution_environment.warehouse`, semantic view FQN, search service FQN, and procedure FQNs in tool definitions)
 
 **Error handling:**
 - If a statement fails, report the error and the file/statement that failed
-- "already exists" errors are safe to ignore (scripts use IF NOT EXISTS / CREATE OR ALTER)
+- "already exists" errors are safe to ignore (scripts use IF NOT EXISTS / CREATE OR ALTER / CREATE OR REPLACE)
 - If warehouse or database doesn't exist errors occur, ensure 00_setup.sql ran first
 - If "not an allowed model" error occurs, verify the agent spec uses `orchestration: auto`
 - FK constraint errors: ensure 01_ddl.sql creates tables in dependency order
@@ -83,6 +85,7 @@ After all scripts complete, use the **user's configured database and schema** in
 1. Verify objects exist:
    ```sql
    SHOW TABLES IN SCHEMA {user_db}.{user_schema};
+   SHOW SEMANTIC VIEWS IN SCHEMA {user_db}.{user_schema};
    SHOW CORTEX SEARCH SERVICES IN SCHEMA {user_db}.{user_schema};
    SHOW PROCEDURES IN SCHEMA {user_db}.{user_schema};
    SHOW AGENTS IN SCHEMA {user_db}.{user_schema};
@@ -93,7 +96,7 @@ After all scripts complete, use the **user's configured database and schema** in
    SELECT TRY_PARSE_JSON(
      SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
        '{user_db}.{user_schema}.KYC_AGENT',
-       $${"messages": [{"role": "user", "content": [{"type": "text", "text": "What are our current high-risk KYC cases?"}]}]}$$
+       $${"messages": [{"role": "user", "content": [{"type": "text", "text": "How many high-risk and PEP clients currently have overdue periodic reviews?"}]}]}$$
      )
    ) AS resp;
    ```
@@ -107,30 +110,33 @@ After validation succeeds, ask the user if they'd like to upload sample document
 ```
 "Your KYC/AML pipeline is deployed. Would you like to upload a sample document and run it through the AI processing pipeline?"
 Options:
-- "Yes, upload samples and run one" — proceed with the steps below
-- "No, I'm done for now" — skip to Output
+- "Yes, upload samples and run one" - proceed with the steps below
+- "No, I'm done for now" - skip to Output
 ```
 
 **If the user opts in:**
 
-1. **Generate or locate sample PDFs.** The repo includes pre-generated samples at `kyc_aml/sample_documents/pdfs/`. If they don't exist, run the generator:
+1. **Generate or locate sample PDFs.** The repo includes pre-generated samples at `kyc_aml/sample_documents/pdfs/clients/`. If they don't exist, run the generator:
    ```bash
    pip install fpdf2
    python kyc_aml/sample_documents/generate_pdfs.py --output kyc_aml/sample_documents/pdfs --count 10
    ```
 
-2. **Upload to stage.** Execute a PUT command for one client folder (pick the first one available):
+2. **Upload to stage and refresh directory.** Upload the sample PDFs to `@{user_db}.{user_schema}.KYC_DOCUMENTS/clients/` (via Snow CLI / Python connector) and run:
    ```sql
-   PUT file://<absolute_path_to_one_client_folder>/*.pdf
-       @{user_db}.{user_schema}.KYC_DOCUMENTS/clients/<client_id>/
-       AUTO_COMPRESS=FALSE;
+   ALTER STAGE {user_db}.{user_schema}.KYC_DOCUMENTS REFRESH;
    ```
 
-3. **Run the pipeline on one document.** Pick one uploaded file and call:
+3. **Run the end-to-end pipeline on showcase cases.** Call:
    ```sql
-   CALL {user_db}.{user_schema}.PROCESS_KYC_DOCUMENT(
-       'clients/<client_id>/<filename>.pdf'
-   );
+   -- Clean Match (Oliver Clarke, UK PEP passport)
+   CALL {user_db}.{user_schema}.PROCESS_AND_VERIFY_DOCUMENT('CL-DEMO-001', '54866c22-96f2-4967-a248-1d6b72a2310f');
+
+   -- Partial Match (Jen Muller vs Jennifer Mueller)
+   CALL {user_db}.{user_schema}.PROCESS_AND_VERIFY_DOCUMENT('CL-DEMO-002', '99c221cb-eb27-44bd-88d7-b69929da359b');
+
+   -- Critical Mismatch (Marcus Sterling vs Jennifer Smith passport)
+   CALL {user_db}.{user_schema}.PROCESS_AND_VERIFY_DOCUMENT('CL-DEMO-003', 'f89335ea-0fd0-4e9e-8b72-fedd94795d9a');
    ```
 
 4. **Show the user what to look for in the output.** After the procedure returns, explain:

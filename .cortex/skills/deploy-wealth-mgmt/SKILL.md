@@ -16,7 +16,7 @@ Deploys the Wealth Management use case from the `bnk-ai-demos` repository. This 
 
 ## Prerequisites
 
-- Cloned repo: `https://github.com/sfc-gh-jheisler/BNK_AI_DEMOS`
+- Cloned repo: `https://github.com/sfc-gh-mharris/BNK_AI_DEMOS`
 - ACCOUNTADMIN or role with CREATE DATABASE, CREATE WAREHOUSE, CREATE STAGE privileges
 - Snowflake account with Cortex AI features enabled
 

@@ -7,25 +7,33 @@ This directory contains pre-generated sample documents and a generator script fo
 Upload the included PDFs directly to your Snowflake stage:
 
 ```sql
--- From SnowSQL or Snowsight (adjust the local path to where you cloned this repo)
+-- From Snow CLI or SnowSQL (adjust the local path to where you cloned this repo)
 PUT file:///path/to/kyc_aml/sample_documents/pdfs/clients/*.pdf
     @BNK.KYC_AML.KYC_DOCUMENTS/clients/
-    AUTO_COMPRESS=FALSE;
+    AUTO_COMPRESS=FALSE OVERWRITE=TRUE;
+
+ALTER STAGE BNK.KYC_AML.KYC_DOCUMENTS REFRESH;
 ```
 
 Then run the processing pipeline on uploaded documents:
 
 ```sql
+-- Single-document OCR + classification + extraction
 CALL BNK.KYC_AML.PROCESS_KYC_DOCUMENT(
-    '<client_id>',
-    '@BNK.KYC_AML.KYC_DOCUMENTS/clients/<client_id>/Passport_<doc_id>.pdf'
+    'clients/Passport_54866c22-96f2-4967-a248-1d6b72a2310f.pdf'
+);
+
+-- End-to-end extraction + identity verification against CLIENTS master
+CALL BNK.KYC_AML.PROCESS_AND_VERIFY_DOCUMENT(
+    'CL-DEMO-001',
+    '54866c22-96f2-4967-a248-1d6b72a2310f'
 );
 ```
 
-Or process all documents in batch:
+Or process staged Pending documents in batch:
 
 ```sql
-CALL BNK.KYC_AML.BATCH_PROCESS_DOCUMENTS(10);
+CALL BNK.KYC_AML.BATCH_PROCESS_DOCUMENTS(5);
 ```
 
 ## Generate More Documents

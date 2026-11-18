@@ -1,0 +1,190 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1152 648" width="1152" height="648">
+  <style>
+    text { font-family: Arial, "Helvetica Neue", Helvetica, sans-serif; }
+  </style>
+  <defs>
+    <marker id="arrow-sf" markerWidth="8" markerHeight="6" refX="7.5" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#29b5e8"/>
+    </marker>
+    <marker id="arrow-sf-navy" markerWidth="8" markerHeight="6" refX="7.5" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#11567f"/>
+    </marker>
+    <marker id="arrow-sf-gray" markerWidth="8" markerHeight="6" refX="7.5" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#5b5b5b"/>
+    </marker>
+  </defs>
+  <rect width="1152" height="648" fill="#ffffff"/>
+  <rect x="24" y="18" width="4" height="42" rx="2" fill="#29b5e8"/>
+  <text x="36" y="37" fill="#000000" font-size="19" font-weight="700">U.S. SBA Borrower &amp; Program Integrity Architecture (BNK.SBA_VETTING)</text>
+  <text x="36" y="55" fill="#5b5b5b" font-size="12.5">National Small Business Profile Service (NSBPS / SBAID), Cortex Document AI, and Statutory Vetting Agent</text>
+  <rect x="744" y="18" width="384" height="42" rx="6" ry="6" fill="#f0f9ff" stroke="#e2e8f0" stroke-width="1.2"/>
+  <text x="756" y="33" fill="#000000" font-size="10.5" font-weight="700">FLOW LEGEND</text>
+  <line x1="756" y1="48" x2="786" y2="48" stroke="#29b5e8" stroke-width="2" marker-end="url(#arrow-sf)"/>
+  <text x="793" y="52" fill="#5b5b5b" font-size="10.5">Data / SQL</text>
+  <line x1="864" y1="48" x2="894" y2="48" stroke="#11567f" stroke-width="1.8" marker-end="url(#arrow-sf-navy)"/>
+  <text x="901" y="52" fill="#5b5b5b" font-size="10.5">Agent / Proc Call</text>
+  <line x1="1002" y1="48" x2="1032" y2="48" stroke="#5b5b5b" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arrow-sf-gray)"/>
+  <text x="1039" y="52" fill="#5b5b5b" font-size="10.5">Policy / Alert</text>
+  <rect x="24" y="76" width="216" height="548" rx="8" ry="8" fill="#f0f9ff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <rect x="24" y="76" width="216" height="28" rx="6" ry="6" fill="#11567f"/>
+  <rect x="24" y="96" width="216" height="8" fill="#11567f"/>
+  <text x="36" y="94" fill="#ffffff" font-size="11.5" font-weight="700">1. SBA INTAKE &amp; FEEDS</text>
+  <rect x="288" y="76" width="288" height="548" rx="8" ry="8" fill="#f0f9ff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <rect x="288" y="76" width="288" height="28" rx="6" ry="6" fill="#11567f"/>
+  <rect x="288" y="96" width="288" height="8" fill="#11567f"/>
+  <text x="300" y="94" fill="#ffffff" font-size="11.5" font-weight="700">2. SNOWFLAKE DATA &amp; DOC AI</text>
+  <rect x="624" y="76" width="248" height="548" rx="8" ry="8" fill="#f0f9ff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <rect x="624" y="76" width="248" height="28" rx="6" ry="6" fill="#11567f"/>
+  <rect x="624" y="96" width="248" height="8" fill="#11567f"/>
+  <text x="636" y="94" fill="#ffffff" font-size="11.5" font-weight="700">3. CORTEX AGENT &amp; TOOLS</text>
+  <rect x="920" y="76" width="208" height="548" rx="8" ry="8" fill="#f0f9ff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <rect x="920" y="76" width="208" height="28" rx="6" ry="6" fill="#11567f"/>
+  <rect x="920" y="96" width="208" height="8" fill="#11567f"/>
+  <text x="932" y="94" fill="#ffffff" font-size="11.5" font-weight="700">4. AGENCY ACTIONS</text>
+  <rect x="36" y="116" width="192" height="92" rx="8" ry="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <rect x="36" y="116" width="4" height="92" rx="2" ry="2" fill="#29b5e8"/>
+  <text x="49" y="137" fill="#000000" font-size="13" font-weight="700">SBA Program Portals</text>
+  <text x="49" y="155" fill="#5b5b5b" font-size="11.5">E-Tran: 7(a), MIA &amp; 504</text>
+  <text x="49" y="171" fill="#5b5b5b" font-size="11.5">Disaster EIDL &amp; MySBA 8(a)</text>
+  <text x="49" y="187" fill="#5b5b5b" font-size="11.5">100K cross-program filings</text>
+  <rect x="36" y="224" width="192" height="108" rx="8" ry="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <rect x="36" y="224" width="4" height="108" rx="2" ry="2" fill="#29b5e8"/>
+  <text x="49" y="245" fill="#000000" font-size="13" font-weight="700">Applicant PDF Uploads</text>
+  <text x="49" y="263" fill="#5b5b5b" font-size="11.5">IRS Form 4506-C / 1120-S</text>
+  <text x="49" y="279" fill="#5b5b5b" font-size="11.5">Form 1919 &amp; Operating Agmt</text>
+  <text x="49" y="295" fill="#5b5b5b" font-size="11.5">Owner ID &amp; Form 159</text>
+  <text x="49" y="311" fill="#5b5b5b" font-size="11.5">Staged raw PDF packages</text>
+  <rect x="36" y="348" width="192" height="108" rx="8" ry="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <rect x="36" y="348" width="4" height="108" rx="2" ry="2" fill="#11567f"/>
+  <text x="49" y="369" fill="#000000" font-size="13" font-weight="700">Federal Integrity Feeds</text>
+  <text x="49" y="387" fill="#5b5b5b" font-size="11.5">Treasury Do Not Pay (DMF)</text>
+  <text x="49" y="403" fill="#5b5b5b" font-size="11.5">CAIVRS &amp; SAM.gov Debarment</text>
+  <text x="49" y="419" fill="#5b5b5b" font-size="11.5">EIDL Hold &amp; OIG Watchlist</text>
+  <text x="49" y="435" fill="#5b5b5b" font-size="11.5">Cross-agency match alerts</text>
+  <rect x="36" y="472" width="192" height="136" rx="8" ry="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <rect x="36" y="472" width="4" height="136" rx="2" ry="2" fill="#11567f"/>
+  <text x="49" y="493" fill="#000000" font-size="13" font-weight="700">Statutory Authorities</text>
+  <text x="49" y="511" fill="#5b5b5b" font-size="11.5">SOP 50 10 8.1 / 5000-876441</text>
+  <text x="49" y="527" fill="#5b5b5b" font-size="11.5">NR 25-42 Age Guardrails</text>
+  <text x="49" y="543" fill="#5b5b5b" font-size="11.5">IRS IVES &amp; OIG Rpt 26-01</text>
+  <text x="49" y="559" fill="#5b5b5b" font-size="11.5">13 CFR 121, 124 &amp; 125</text>
+  <text x="49" y="575" fill="#5b5b5b" font-size="11.5">Effective 2025-2026 rules</text>
+  <rect x="300" y="116" width="264" height="96" rx="8" ry="8" fill="#11567f"/>
+  <rect x="300" y="116" width="4" height="96" rx="2" ry="2" fill="#29b5e8"/>
+  <text x="312" y="137" fill="#ffffff" font-size="13" font-weight="700">NSBPS Golden Record (SBAID)</text>
+  <text x="312" y="155" fill="#ffffff" font-size="11.5" opacity="0.9">SBA_BUSINESSES (50K) &amp; OWNERS (75K)</text>
+  <text x="312" y="171" fill="#ffffff" font-size="11.5" opacity="0.9">SBA_APPLICATIONS (100K filings)</text>
+  <text x="312" y="187" fill="#ffffff" font-size="11.5" opacity="0.9">Direct &amp; indirect ownership tiers</text>
+  <rect x="300" y="228" width="264" height="152" rx="8" ry="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <rect x="300" y="228" width="4" height="152" rx="2" ry="2" fill="#29b5e8"/>
+  <text x="313" y="249" fill="#000000" font-size="13" font-weight="700">Cortex Document AI Pipeline</text>
+  <text x="313" y="267" fill="#5b5b5b" font-size="11.5">@SBA_DOCUMENTS stage (200K docs)</text>
+  <text x="313" y="283" fill="#5b5b5b" font-size="11.5">1. AI_PARSE_DOCUMENT (LAYOUT mode)</text>
+  <text x="313" y="299" fill="#5b5b5b" font-size="11.5">2. AI_CLASSIFY (mislabeled check)</text>
+  <text x="313" y="315" fill="#5b5b5b" font-size="11.5">3. AI_EXTRACT (scores =&gt; TRUE)</text>
+  <text x="313" y="331" fill="#5b5b5b" font-size="11.5">4. SBA_VERIFICATION_RESULTS</text>
+  <text x="313" y="347" fill="#5b5b5b" font-size="11.5">Field confidence &amp; tax diffs</text>
+  <rect x="300" y="396" width="264" height="92" rx="8" ry="8" fill="#11567f"/>
+  <rect x="300" y="396" width="4" height="92" rx="2" ry="2" fill="#29b5e8"/>
+  <text x="312" y="417" fill="#ffffff" font-size="13" font-weight="700">Federal Exclusion Screening</text>
+  <text x="312" y="435" fill="#ffffff" font-size="11.5" opacity="0.9">FEDERAL_EXCLUSION_ALERTS (25K)</text>
+  <text x="312" y="451" fill="#ffffff" font-size="11.5" opacity="0.9">Death Master, CAIVRS, SAM &amp; OIG</text>
+  <text x="312" y="467" fill="#ffffff" font-size="11.5" opacity="0.9">Severity &amp; open status tracking</text>
+  <rect x="300" y="504" width="264" height="104" rx="8" ry="8" fill="#11567f"/>
+  <rect x="300" y="504" width="4" height="104" rx="2" ry="2" fill="#29b5e8"/>
+  <text x="312" y="525" fill="#ffffff" font-size="13" font-weight="700">Statutory Policy Corpus</text>
+  <text x="312" y="543" fill="#ffffff" font-size="11.5" opacity="0.9">SBA_SOP_POLICIES (13 SOP/CFR rules)</text>
+  <text x="312" y="559" fill="#ffffff" font-size="11.5" opacity="0.9">Indexed by program &amp; category</text>
+  <text x="312" y="575" fill="#ffffff" font-size="11.5" opacity="0.9">1-hour target lag refresh</text>
+  <rect x="636" y="116" width="204" height="104" rx="8" ry="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <rect x="636" y="116" width="6" height="104" rx="2" ry="2" fill="#29b5e8"/>
+  <text x="649" y="137" fill="#000000" font-size="13" font-weight="700">SBA_VETTING_AGENT</text>
+  <text x="649" y="155" fill="#5b5b5b" font-size="11.5">Snowflake Intelligence (CoWork)</text>
+  <text x="649" y="171" fill="#5b5b5b" font-size="11.5">Budget: auto (300s / 64K tok)</text>
+  <text x="649" y="187" fill="#5b5b5b" font-size="11.5">Multi-tool SQL &amp; SOP citations</text>
+  <text x="649" y="203" fill="#5b5b5b" font-size="11.5">ShieldBoltAgentIcon profile</text>
+  <rect x="636" y="244" width="204" height="108" rx="8" ry="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <rect x="636" y="244" width="4" height="108" rx="2" ry="2" fill="#29b5e8"/>
+  <text x="649" y="265" fill="#000000" font-size="13" font-weight="700">SBAAnalyst (Cortex Analyst)</text>
+  <text x="649" y="283" fill="#5b5b5b" font-size="11.5">View: SV_SBA_VETTING (6 tables)</text>
+  <text x="649" y="299" fill="#5b5b5b" font-size="11.5">Queries SBAID, owners, filings,</text>
+  <text x="649" y="315" fill="#5b5b5b" font-size="11.5">documents, results &amp; alerts</text>
+  <text x="649" y="331" fill="#5b5b5b" font-size="11.5">Verified portfolio metrics</text>
+  <rect x="636" y="368" width="204" height="108" rx="8" ry="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <rect x="636" y="368" width="4" height="108" rx="2" ry="2" fill="#11567f"/>
+  <text x="649" y="389" fill="#000000" font-size="13" font-weight="700">Stored Procedure Tools</text>
+  <text x="649" y="407" fill="#5b5b5b" font-size="11.5">1. PROCESS_AND_VERIFY (PDF)</text>
+  <text x="649" y="423" fill="#5b5b5b" font-size="11.5">2. VERIFY_SBA_ELIGIBILITY</text>
+  <text x="649" y="439" fill="#5b5b5b" font-size="11.5">Live parse + statutory gates</text>
+  <text x="649" y="455" fill="#5b5b5b" font-size="11.5">SQL Scripting on BNK_WH</text>
+  <rect x="636" y="492" width="204" height="116" rx="8" ry="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <rect x="636" y="492" width="4" height="116" rx="2" ry="2" fill="#29b5e8"/>
+  <text x="649" y="513" fill="#000000" font-size="13" font-weight="700">SBASOPSearch &amp; Charts</text>
+  <text x="649" y="531" fill="#5b5b5b" font-size="11.5">Search: SBA_SOP_SEARCH</text>
+  <text x="649" y="547" fill="#5b5b5b" font-size="11.5">Retrieves SOP &amp; CFR citations</text>
+  <text x="649" y="563" fill="#5b5b5b" font-size="11.5">data_to_chart: portfolio visuals</text>
+  <text x="649" y="579" fill="#5b5b5b" font-size="11.5">Grounded statutory answers</text>
+  <rect x="932" y="116" width="184" height="108" rx="8" ry="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <rect x="932" y="116" width="4" height="108" rx="2" ry="2" fill="#29b5e8"/>
+  <text x="945" y="137" fill="#000000" font-size="13" font-weight="700">7(a) &amp; 504 Specialists</text>
+  <text x="945" y="155" fill="#5b5b5b" font-size="11.5">100% U.S. citizen tiers</text>
+  <text x="945" y="171" fill="#5b5b5b" font-size="11.5">&amp; NAICS size standards</text>
+  <text x="945" y="187" fill="#5b5b5b" font-size="11.5">Out: E-Tran Auth / Decline</text>
+  <text x="945" y="203" fill="#5b5b5b" font-size="11.5">Queue SLA triage</text>
+  <rect x="932" y="240" width="184" height="108" rx="8" ry="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <rect x="932" y="240" width="4" height="108" rx="2" ry="2" fill="#29b5e8"/>
+  <text x="945" y="261" fill="#000000" font-size="13" font-weight="700">GCBD 8(a) Reviewers</text>
+  <text x="945" y="279" fill="#5b5b5b" font-size="11.5">13 CFR 124 control &amp;</text>
+  <text x="945" y="295" fill="#5b5b5b" font-size="11.5">50% subcontracting cap</text>
+  <text x="945" y="311" fill="#5b5b5b" font-size="11.5">Out: Intent to Terminate</text>
+  <text x="945" y="327" fill="#5b5b5b" font-size="11.5">Annual review audit</text>
+  <rect x="932" y="364" width="184" height="116" rx="8" ry="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <rect x="932" y="364" width="4" height="116" rx="2" ry="2" fill="#11567f"/>
+  <text x="945" y="385" fill="#000000" font-size="13" font-weight="700">SBA OIG &amp; Fraud Ops</text>
+  <text x="945" y="403" fill="#5b5b5b" font-size="11.5">4506-C &gt;50% rev inflation</text>
+  <text x="945" y="419" fill="#5b5b5b" font-size="11.5">Death Master &amp; Hold Codes</text>
+  <text x="945" y="435" fill="#5b5b5b" font-size="11.5">Out: Freeze &amp; OIG Referral</text>
+  <text x="945" y="451" fill="#5b5b5b" font-size="11.5">Form 159 packager audit</text>
+  <rect x="932" y="496" width="184" height="112" rx="8" ry="8" fill="#11567f"/>
+  <rect x="932" y="496" width="4" height="112" rx="2" ry="2" fill="#29b5e8"/>
+  <text x="944" y="517" fill="#ffffff" font-size="13" font-weight="700">Governance &amp; Runtime</text>
+  <text x="944" y="535" fill="#ffffff" font-size="11.5" opacity="0.9">Warehouse: BNK_WH</text>
+  <text x="944" y="551" fill="#ffffff" font-size="11.5" opacity="0.9">Role-governed access</text>
+  <text x="944" y="567" fill="#ffffff" font-size="11.5" opacity="0.9">Scored field audit trail</text>
+  <text x="944" y="583" fill="#ffffff" font-size="11.5" opacity="0.9">Live resettable showcase</text>
+  <line x1="228" y1="162" x2="300" y2="162" stroke="#29b5e8" stroke-width="2" marker-end="url(#arrow-sf)"/>
+  <rect x="243" y="139" width="41" height="17" rx="3" ry="3" fill="#ffffff" opacity="0.96" stroke="#e2e8f0" stroke-width="0.8"/>
+  <text x="264" y="151.5" text-anchor="middle" fill="#5b5b5b" font-size="10.5">SBAID</text>
+  <line x1="228" y1="278" x2="300" y2="278" stroke="#29b5e8" stroke-width="2" marker-end="url(#arrow-sf)"/>
+  <rect x="246" y="255" width="36" height="17" rx="3" ry="3" fill="#ffffff" opacity="0.96" stroke="#e2e8f0" stroke-width="0.8"/>
+  <text x="264" y="267.5" text-anchor="middle" fill="#5b5b5b" font-size="10.5">PDFs</text>
+  <line x1="228" y1="432" x2="300" y2="432" stroke="#29b5e8" stroke-width="2" marker-end="url(#arrow-sf)"/>
+  <rect x="240" y="409" width="47" height="17" rx="3" ry="3" fill="#ffffff" opacity="0.96" stroke="#e2e8f0" stroke-width="0.8"/>
+  <text x="264" y="421.5" text-anchor="middle" fill="#5b5b5b" font-size="10.5">Alerts</text>
+  <line x1="228" y1="556" x2="300" y2="556" stroke="#5b5b5b" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arrow-sf-gray)"/>
+  <rect x="246" y="533" width="36" height="17" rx="3" ry="3" fill="#ffffff" opacity="0.96" stroke="#e2e8f0" stroke-width="0.8"/>
+  <text x="264" y="545.5" text-anchor="middle" fill="#5b5b5b" font-size="10.5">SOPs</text>
+  <path d="M 564,168 L 596,168 L 596,268 L 636,268" fill="none" stroke="#29b5e8" stroke-width="2" marker-end="url(#arrow-sf)"/>
+  <rect x="578" y="207" width="36" height="17" rx="3" ry="3" fill="#ffffff" opacity="0.96" stroke="#e2e8f0" stroke-width="0.8"/>
+  <text x="596" y="219.5" text-anchor="middle" fill="#5b5b5b" font-size="10.5">SQL</text>
+  <line x1="564" y1="304" x2="636" y2="304" stroke="#29b5e8" stroke-width="2" marker-end="url(#arrow-sf)"/>
+  <rect x="573" y="281" width="53" height="17" rx="3" ry="3" fill="#ffffff" opacity="0.96" stroke="#e2e8f0" stroke-width="0.8"/>
+  <text x="600" y="293.5" text-anchor="middle" fill="#5b5b5b" font-size="10.5">Results</text>
+  <path d="M 636,396 L 600,396 L 600,356 L 564,356" fill="none" stroke="#11567f" stroke-width="1.8" marker-end="url(#arrow-sf-navy)"/>
+  <rect x="579" y="367" width="41" height="17" rx="3" ry="3" fill="#ffffff" opacity="0.96" stroke="#e2e8f0" stroke-width="0.8"/>
+  <text x="600" y="379.5" text-anchor="middle" fill="#5b5b5b" font-size="10.5">Parse</text>
+  <line x1="564" y1="444" x2="636" y2="444" stroke="#5b5b5b" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arrow-sf-gray)"/>
+  <rect x="576" y="421" width="47" height="17" rx="3" ry="3" fill="#ffffff" opacity="0.96" stroke="#e2e8f0" stroke-width="0.8"/>
+  <text x="600" y="433.5" text-anchor="middle" fill="#5b5b5b" font-size="10.5">Screen</text>
+  <line x1="564" y1="556" x2="636" y2="556" stroke="#5b5b5b" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arrow-sf-gray)"/>
+  <rect x="579" y="533" width="41" height="17" rx="3" ry="3" fill="#ffffff" opacity="0.96" stroke="#e2e8f0" stroke-width="0.8"/>
+  <text x="600" y="545.5" text-anchor="middle" fill="#5b5b5b" font-size="10.5">Index</text>
+  <path d="M 840,200 L 860,200 L 860,548 L 840,548" fill="none" stroke="#11567f" stroke-width="1.8" marker-end="url(#arrow-sf-navy)"/>
+  <line x1="860" y1="296" x2="840" y2="296" stroke="#11567f" stroke-width="1.8" marker-end="url(#arrow-sf-navy)"/>
+  <line x1="860" y1="420" x2="840" y2="420" stroke="#11567f" stroke-width="1.8" marker-end="url(#arrow-sf-navy)"/>
+  <line x1="840" y1="156" x2="932" y2="156" stroke="#29b5e8" stroke-width="2" marker-end="url(#arrow-sf)"/>
+  <path d="M 896,156 L 896,292 L 932,292" fill="none" stroke="#29b5e8" stroke-width="2" marker-end="url(#arrow-sf)"/>
+  <path d="M 896,292 L 896,420 L 932,420" fill="none" stroke="#29b5e8" stroke-width="2" marker-end="url(#arrow-sf)"/>
+  <rect x="866" y="131" width="60" height="17" rx="3" ry="3" fill="#ffffff" opacity="0.96" stroke="#e2e8f0" stroke-width="0.8"/>
+  <text x="896" y="143.5" text-anchor="middle" fill="#5b5b5b" font-size="10.5">Decisions</text>
+</svg>

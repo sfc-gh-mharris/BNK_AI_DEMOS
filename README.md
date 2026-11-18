@@ -7,7 +7,8 @@ End-to-end banking AI demonstrations built on Snowflake Cortex. Each use case sh
 | Use Case | Schema | Capabilities | Description |
 |----------|--------|--------------|-------------|
 | **Customer 360** | `BNK.CUSTOMER_360` | Cortex Analyst + Search | Unified customer view with transaction analytics and note search |
-| **KYC/AML** | `BNK.KYC_AML` | Document Pipeline + Search | Identity document processing with policy compliance search. Includes sample PDFs and generator. |
+| **KYC/AML** | `BNK.KYC_AML` | Cortex Analyst + Document Pipeline + Search | Identity document processing, semantic SLA analytics, and policy compliance search. Includes sample PDFs and generator. |
+| **SBA Borrower & Program Integrity** | `BNK.SBA_VETTING` | Cortex Analyst + Document Pipeline + Search | Federal SBA / NSBPS (`SBAID`) borrower vetting, 100% citizen ownership tracing, IRS 4506-C tax reconciliation, hold codes, and 8(a) control audits. |
 | **Lending Analytics** | `BNK.LENDING` | Cortex Analyst + Search | Mortgage portfolio analytics with policy and interaction search |
 | **Wealth Management** | `BNK.WEALTH_MGMT` | Cortex Analyst + Search + Documents | Portfolio analytics, research search, compliance, and onboarding doc processing |
 
@@ -25,7 +26,7 @@ This repo includes built-in Cortex Code skills that automate the entire deployme
 ### Step 1: Clone the repository
 
 ```bash
-git clone https://github.com/sfc-gh-jheisler/BNK_AI_DEMOS.git
+git clone https://github.com/sfc-gh-mharris/BNK_AI_DEMOS.git
 ```
 
 ### Step 2: Open in Cortex Code
@@ -43,7 +44,8 @@ Type `/` in the Cortex Code chat to see available skills. Select the use case yo
 | Skill Command | Deploys |
 |---------------|---------|
 | `/deploy-customer360` | Customer 360 — Cortex Analyst + 2 Search Services + Agent |
-| `/deploy-kyc` | KYC/AML — Document Pipeline + Search + Agent |
+| `/deploy-kyc` | KYC/AML - Cortex Analyst + Document Pipeline + Search + Agent |
+| `/deploy-sba-vetting` | SBA Borrower & Program Integrity - SBAID Analyst + Document AI + SOP Search + Agent |
 | `/deploy-lending` | Lending Analytics — Cortex Analyst + 2 Search Services + Agent |
 | `/deploy-wealth-mgmt` | Wealth Management — Cortex Analyst + 3 Search Services + Document Pipeline + Agent |
 
@@ -76,7 +78,8 @@ All use cases deploy into the **BNK** database with a shared **BNK_WH** warehous
 | Schema | Agent | Semantic View | Search Services | Document Pipeline |
 |--------|-------|---------------|-----------------|-------------------|
 | CUSTOMER_360 | CUSTOMER_360_AGENT | SV_CUSTOMER_360 | CUSTOMER_NOTES_SEARCH, POLICY_SEARCH | — |
-| KYC_AML | KYC_AGENT | — | KYC_POLICY_SEARCH | AI_PARSE_DOCUMENT procedures |
+| KYC_AML | KYC_AGENT | SV_KYC_AML | KYC_POLICY_SEARCH | AI_PARSE_DOCUMENT procedures |
+| SBA_VETTING | SBA_VETTING_AGENT | SV_SBA_VETTING | SBA_SOP_SEARCH | SBA Form 1919 / IRS 4506-C / Operating Agreement procedures |
 | LENDING | LENDING_AGENT | SV_LENDING_ANALYTICS | LENDING_POLICY_SEARCH, INTERACTION_SEARCH | — |
 | WEALTH_MGMT | WEALTH_MGMT_AGENT | SV_WEALTH_PORTFOLIO | RESEARCH_SEARCH, COMPLIANCE_SEARCH, CLIENT_NOTES_SEARCH | AI_PARSE_DOCUMENT procedures |
 
@@ -108,7 +111,7 @@ CREATE OR REPLACE SECRET BNK.PUBLIC.GIT_PAT_SECRET
 ```sql
 CREATE OR REPLACE API INTEGRATION GIT_API_INTEGRATION
   API_PROVIDER = git_https_api
-  API_ALLOWED_PREFIXES = ('https://github.com/sfc-gh-jheisler')
+  API_ALLOWED_PREFIXES = ('https://github.com/sfc-gh-mharris')
   ALLOWED_AUTHENTICATION_SECRETS = (BNK.PUBLIC.GIT_PAT_SECRET)
   ENABLED = TRUE;
 ```
@@ -119,7 +122,7 @@ CREATE OR REPLACE API INTEGRATION GIT_API_INTEGRATION
 CREATE OR REPLACE GIT REPOSITORY BNK.PUBLIC.BNK_AI_DEMOS
   API_INTEGRATION = GIT_API_INTEGRATION
   GIT_CREDENTIALS = BNK.PUBLIC.GIT_PAT_SECRET
-  ORIGIN = 'https://github.com/sfc-gh-jheisler/BNK_AI_DEMOS.git';
+  ORIGIN = 'https://github.com/sfc-gh-mharris/BNK_AI_DEMOS.git';
 ```
 
 #### 5. Run the SQL
